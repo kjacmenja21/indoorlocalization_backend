@@ -32,4 +32,4 @@ class DBSettings(BaseSettings):
         )
 
 
-settings = DBSettings()
+db_settings = DBSettings()
