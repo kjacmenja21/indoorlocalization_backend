@@ -5,7 +5,6 @@ from sqlalchemy.engine.url import URL
 class Settings(BaseSettings):
     service_name: str = "FastAPI template"
     debug: bool = False
-    # log_level: LogLevels = LogLevels.info
 
     db_driver: str = "postgresql+asyncpg"
     db_host: str = "db"
