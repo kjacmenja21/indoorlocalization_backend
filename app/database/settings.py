@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 from sqlalchemy.engine.url import URL
 
 
-class Settings(BaseSettings):
+class DBSettings(BaseSettings):
     service_name: str = "FastAPI template"
     debug: bool = False
 
@@ -32,4 +32,4 @@ class Settings(BaseSettings):
         )
 
 
-settings = Settings()
+settings = DBSettings()

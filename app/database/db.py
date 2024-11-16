@@ -3,14 +3,14 @@ from typing import AsyncIterator
 
 from sqlalchemy.ext import asyncio as sa
 
-from app.database.settings import Settings
+from app.database.settings import DBSettings
 
 logger = logging.getLogger(__name__)
 
 
 async def create_sa_engine() -> AsyncIterator[sa.AsyncEngine]:
     logger.info("Initializing SQLAlchemy engine")
-    engine = sa.create_async_engine(str(Settings()))
+    engine = sa.create_async_engine(str(DBSettings()))
     logger.info("SQLAlchemy engine has been initialized")
 
     try:
