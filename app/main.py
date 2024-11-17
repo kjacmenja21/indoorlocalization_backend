@@ -10,4 +10,5 @@ def create_server() -> FastAPI:
 
 
 if __name__ == "__main__":
+    uvicorn_config.app = create_server()
     uvicorn.run(uvicorn_config)
