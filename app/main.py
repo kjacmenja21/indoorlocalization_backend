@@ -1,14 +1,16 @@
 import uvicorn
-from config import FastAPISettings, uvicorn_config
+from config import FastAPISettings, UvicornConfig
 from fastapi import FastAPI
 
 
 def create_server() -> FastAPI:
     app = FastAPI(**FastAPISettings().model_dump())
-
     return app
 
 
+app = create_server()
+
 if __name__ == "__main__":
-    uvicorn_config.app = create_server()
-    uvicorn.run(uvicorn_config)
+    uvicorn.run(
+        **UvicornConfig().model_dump(),
+    )
