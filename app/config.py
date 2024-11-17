@@ -8,7 +8,6 @@ class FastAPISettings(BaseSettings):
 
 
 class UvicornConfig(BaseSettings):
-    app: str = "main:app"
+    app: str = "app:app"
     host: str = "localhost"
-    reload: bool = True
     port: int = 8000
