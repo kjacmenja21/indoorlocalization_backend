@@ -28,7 +28,7 @@ class CustomAsyncSession(sa.AsyncSession):
         return await super().close()
 
 
-async def create_session(
+async def create_async_session(
     engine: sa.AsyncEngine,
 ) -> AsyncIterator[sa.AsyncSession]:
     async with CustomAsyncSession(
