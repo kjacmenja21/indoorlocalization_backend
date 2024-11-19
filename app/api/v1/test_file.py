@@ -6,6 +6,5 @@ test_router = APIRouter(prefix="/test", tags=["test"])
 
 
 @test_router.get("/")
-async def test(session: DatabaseSessionAsync):
-    await session.aclose()
+async def test():
     return {"test": "success"}
