@@ -7,7 +7,7 @@ class DBSettings(BaseSettings):
     debug: bool = False
 
     db_driver: str = "postgresql+asyncpg"
-    db_host: str = "indoor_localization"
+    db_host: str = "localhost"
     db_port: int = 5432
     db_user: str = "postgres"
     db_password: str = "password"
