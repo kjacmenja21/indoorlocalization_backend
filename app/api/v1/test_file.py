@@ -1,7 +1,5 @@
 from fastapi import APIRouter
 
-from app.database.dependencies import DatabaseSessionAsync
-
 test_router = APIRouter(prefix="/test", tags=["test"])
 
 
