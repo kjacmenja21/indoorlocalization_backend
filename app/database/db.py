@@ -1,39 +1,30 @@
 import logging
-from typing import AsyncIterator
+from typing import Annotated, AsyncIterator
 
-from sqlalchemy.ext import asyncio as sa
+from fastapi import Depends
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.database.settings import db_settings
 
 logger = logging.getLogger(__name__)
 
+async_engine = create_async_engine(db_settings.model_dump())
 
-async def create_sa_engine() -> AsyncIterator[sa.AsyncEngine]:
-    logger.info("Initializing SQLAlchemy engine")
-    engine = sa.create_async_engine(str(db_settings))
-    logger.info("SQLAlchemy engine has been initialized")
+AsyncSessionLocal = async_sessionmaker(
+    bind=async_engine,
+    autoflush=False,
+    future=True,
+)
 
+
+async def get_session() -> AsyncIterator[async_sessionmaker]:
     try:
-        yield engine
-    finally:
-        await engine.dispose()
-        logger.info("SQLAlchemy engine has been cleaned up")
-
-
-class CustomAsyncSession(sa.AsyncSession):
-    async def close(self) -> None:
-        if isinstance(self.bind, sa.AsyncConnection):
-            return self.expunge_all()
-
-        return await super().close()
-
-
-async def create_async_session(
-    engine: sa.AsyncEngine,
-) -> AsyncIterator[sa.AsyncSession]:
-    async with CustomAsyncSession(
-        engine, expire_on_commit=False, autoflush=False
-    ) as session:
         logger.info("session created")
-        yield session
+        yield AsyncSessionLocal
         logger.info("session closed")
+    except SQLAlchemyError as e:
+        logger.exception(e)
+
+
+AsyncSession = Annotated[async_sessionmaker, Depends(get_session)]

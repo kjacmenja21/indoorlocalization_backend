@@ -1,11 +1,8 @@
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from app.database.db import create_async_session, create_sa_engine
+from app.database.db import get_session
 
-DatabaseSessionAsync = Annotated[
-    AsyncSession,
-    Depends(lambda: create_async_session(create_sa_engine()), use_cache=True),
-]
+AsyncSession = Annotated[async_sessionmaker, Depends(get_session())]
