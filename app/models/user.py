@@ -1,6 +1,6 @@
-from unittest.mock import Base
-
 from sqlalchemy import Column, Integer, String
+
+from app.models.common import Base
 
 
 class User(Base):
