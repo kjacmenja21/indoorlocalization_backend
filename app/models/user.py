@@ -1,12 +1,11 @@
-from sqlalchemy import Column, Integer, Serial, String
-from sqlalchemy.ext.declarative import declarative_base
+from unittest.mock import Base
 
-Base = declarative_base()
+from sqlalchemy import Column, Integer, String
 
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(Serial, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(100), unique=True)
     first_name = Column(String(50))
     last_name = Column(String(50))
