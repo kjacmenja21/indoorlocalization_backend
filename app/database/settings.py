@@ -6,12 +6,12 @@ class DBSettings(BaseSettings):
     service_name: str = "FastAPI template"
     debug: bool = False
 
-    db_driver: str = "postgresql+asyncpg"
-    db_host: str = "localhost"
+    db_driver: str = "postgresql"
+    db_host: str = "127.0.0.1"
     db_port: int = 5432
-    db_user: str = "postgres"
-    db_password: str = "password"
-    db_database: str = "postgres"
+    db_user: str = "dev"
+    db_password: str = "dev_password"
+    db_database: str = "indoor_dev"
 
     db_pool_size: int = 5
     db_max_overflow: int = 0
@@ -23,12 +23,12 @@ class DBSettings(BaseSettings):
     @property
     def db_dsn(self) -> URL:
         return URL.create(
-            self.db_driver,
-            self.db_user,
-            self.db_password,
-            self.db_host,
-            self.db_port,
-            self.db_database,
+            drivername=self.db_driver,
+            username=self.db_user,
+            host=self.db_host,
+            port=self.db_port,
+            database=self.db_database,
+            password=self.db_password,
         )
 
 
