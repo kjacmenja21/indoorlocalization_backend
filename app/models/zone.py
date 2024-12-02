@@ -9,6 +9,7 @@ class Zone(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(80))
     floorMapId: Mapped[int] = mapped_column(ForeignKey("floorMap.id"))
+    color: Mapped[int] = mapped_column(Integer)
 
 
 class ZonePoint(Base):
