@@ -3,4 +3,4 @@
 # that Alembic can recognise the models and
 # create the migrations revision
 
-from app.models.user import User
+from app.models.user import User, UserRole

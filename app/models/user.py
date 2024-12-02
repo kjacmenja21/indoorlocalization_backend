@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.common import Base
@@ -13,4 +13,10 @@ class User(Base):
     contract: Mapped[str] = mapped_column(String(20))
     password: Mapped[str] = mapped_column(String(64))
     salt: Mapped[str] = mapped_column(String(64))
-    roleId: Mapped[int] = mapped_column(Integer)
+    roleId: Mapped[int] = ForeignKey("userRole.id")
+
+
+class UserRole(Base):
+    __tablename__ = "userRole"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(20))
