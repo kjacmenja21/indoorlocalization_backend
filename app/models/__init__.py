@@ -5,5 +5,6 @@
 
 from app.models.asset import Asset
 from app.models.floor_map import FloorMap
+from app.models.history import AssetPositionHistory, AssetZoneHistory
 from app.models.user import User, UserRole
 from app.models.zone import Zone, ZonePoint
