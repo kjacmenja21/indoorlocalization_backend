@@ -14,7 +14,8 @@ config = context.config
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-    print(db_settings.db_dsn)
+
+    # This will use db_settings config instead of the .ini file
     config.set_main_option(
         "sqlalchemy.url", db_settings.db_dsn.render_as_string(hide_password=False)
     )
