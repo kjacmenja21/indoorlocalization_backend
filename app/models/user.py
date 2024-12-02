@@ -13,7 +13,7 @@ class User(Base):
     contract: Mapped[str] = mapped_column(String(20))
     password: Mapped[str] = mapped_column(String(64))
     salt: Mapped[str] = mapped_column(String(64))
-    roleId: Mapped[int] = ForeignKey("userRole.id")
+    roleId: Mapped[int] = mapped_column(ForeignKey("userRole.id"))
 
 
 class UserRole(Base):
