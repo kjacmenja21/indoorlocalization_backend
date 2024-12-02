@@ -14,3 +14,12 @@ class AssetPositionHistory(Base):
     y: Mapped[float] = mapped_column(Float)
     dateTime: Mapped[datetime] = mapped_column(DateTime)
     floorMapId: Mapped[int] = mapped_column(ForeignKey("floorMap.id"))
+
+
+class AssetZoneHistory(Base):
+    __tablename__ = "assetZoneHistory"
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    assetId: Mapped[int] = mapped_column(ForeignKey("asset.id"))
+    zoneId: Mapped[int] = mapped_column(ForeignKey("zone.id"))
+    enterDateTime: Mapped[datetime] = mapped_column(DateTime)
+    exitDateTime: Mapped[datetime] = mapped_column(DateTime)
