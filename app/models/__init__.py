@@ -4,4 +4,4 @@
 # create the migrations revision
 
 from app.models.user import User, UserRole
-from app.models.zone_point import ZonePoint
+from app.models.zone import Zone, ZonePoint
