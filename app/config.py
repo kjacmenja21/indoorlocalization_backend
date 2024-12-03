@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings
-from uvicorn import Config
 
 
 class FastAPISettings(BaseSettings):
@@ -8,9 +7,7 @@ class FastAPISettings(BaseSettings):
     version: str = "0.0.0"
 
 
-uvicorn_config = Config(
-    app="main:app",
-    host="0.0.0.0",
-    reload=True,
-    port=8000,
-)
+class UvicornConfig(BaseSettings):
+    app: str = "app:app"
+    host: str = "localhost"
+    port: int = 8000
