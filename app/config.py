@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings
 
 class GeneralConfig(BaseSettings):
     LOG_LEVEL: Literal["INFO", "WARNING", "ERROR"] = "INFO"
+    use_multicast_dns: bool = True
 
 
 class FastAPISettings(BaseSettings):
