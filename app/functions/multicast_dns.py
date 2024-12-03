@@ -20,16 +20,16 @@ class MulticastDNS:
             server=f"{self.hostname}.local.",
         )
 
-    def get_hostname(self):
+    def get_hostname(self) -> bytes:
         return socket.inet_aton(
             socket.gethostbyname(socket.gethostname()),
         )
 
-    async def register_service(self):
+    async def register_service(self) -> None:
         logging.info(f"Registering service {self.service_info.name}")
         await asyncio.to_thread(self.zeroconf.register_service, self.service_info)
 
-    async def unregister_service(self):
+    async def unregister_service(self) -> None:
         logging.info(f"Unregistering service {self.service_info.name}")
         await asyncio.to_thread(self.zeroconf.unregister_service, self.service_info)
         await asyncio.to_thread(self.zeroconf.close)
