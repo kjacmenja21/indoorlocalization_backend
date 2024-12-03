@@ -1,5 +1,11 @@
+from typing import Literal
+
 from hypercorn import Config
 from pydantic_settings import BaseSettings
+
+
+class GeneralConfig(BaseSettings):
+    LOG_LEVEL: Literal["INFO", "WARNING", "ERROR"] = "INFO"
 
 
 class FastAPISettings(BaseSettings):
