@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import socket
 
 from zeroconf import ServiceInfo, Zeroconf
 
@@ -13,10 +14,15 @@ class MulticastDNS:
         self.service_info = ServiceInfo(
             type_=self.service_type,
             name=f"{self.hostname}.{self.service_type}",
-            addresses=[b"\x00\x00\x00\x00"],  # Placeholder; this will be auto-detected
+            addresses=[self.get_hostname()],
             port=self.port,
             properties={},
             server=f"{self.hostname}.local.",
+        )
+
+    def get_hostname(self):
+        return socket.inet_aton(
+            socket.gethostbyname(socket.gethostname()),
         )
 
     async def register_service(self):
