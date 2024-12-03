@@ -1,8 +1,14 @@
-import uvicorn
+import asyncio
 
-from app.config import UvicornConfig
+from hypercorn.asyncio import serve
+
+from app import app
+from app.config import ASGIConfig, HypercornConfig
+
+
+async def main():
+    await serve(app, HypercornConfig())
+
 
 if __name__ == "__main__":
-    uvicorn.run(
-        **UvicornConfig().model_dump(),
-    )
+    asyncio.run(main(), debug=True)
