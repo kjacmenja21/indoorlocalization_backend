@@ -6,6 +6,13 @@ from pydantic import BaseModel, computed_field
 from app.schemas.auth.user import Role
 
 
+class TokenEncode(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    scope: list[Role] = [Role.USER]
+
+
 class TokenDecode(BaseModel):
     id: UUID
     iat: datetime
