@@ -1,6 +1,8 @@
 import datetime
+import logging
 from datetime import datetime as dt
 from datetime import timedelta
+from typing import Any
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -8,8 +10,8 @@ from pydantic import BaseModel
 
 from app.config import JWTConfig
 
-# Secret key to encode and decode JWT
 config = JWTConfig()
+logger = logging.getLogger(__name__)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -31,11 +33,17 @@ def create_access_token(data: BaseModel, expires_delta: timedelta | None = None)
     else:
         expire = dt.now(datetime.timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, config.secret_key, algorithm=config.algorithm)
-    return encoded_jwt
+
+    try:
+        encoded_jwt = jwt.encode(
+            to_encode, config.secret_key, algorithm=config.algorithm
+        )
+        return encoded_jwt
+    except JWTError as e:
+        logger.error(e)
 
 
-def decode_access_token(token: str):
+def decode_access_token(token: str) -> dict[str, Any] | None:
     try:
         payload = jwt.decode(token, config.secret_key, algorithms=[config.algorithm])
         return payload
