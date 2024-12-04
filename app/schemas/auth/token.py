@@ -1,14 +1,29 @@
-from pydantic import BaseModel
+from datetime import UTC, datetime, timedelta
+
+from pydantic import BaseModel, Field, computed_field
 
 from app.functions.exceptions import forbidden
-from app.functions.jwt import decode_access_token
-from app.schemas.auth.token_extra import TokenDecode
+from app.functions.jwt import create_access_token, decode_access_token
+from app.schemas.auth.token_extra import TokenDecode, TokenEncode
 from app.schemas.auth.user import Role
 
 
 class Token(BaseModel):
     access_token: str
     token_type: str = "Bearer"
+    scope: list[Role] = [Role.USER]
+    expires_in: int
+    iat: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+    @computed_field
+    def exp(self) -> datetime:
+        return self.iat + timedelta(seconds=self.expires_in)
+
+    def encode(self) -> TokenEncode:
+        token = create_access_token(self)
+        return TokenEncode(
+            access_token=token, expires_in=self.expires_in, scope=self.scope
+        )
 
     @classmethod
     def decode(cls, token: str, scope: list[Role] | None = None) -> TokenDecode:

@@ -1,5 +1,6 @@
 import datetime
 import logging
+from datetime import UTC
 from datetime import datetime as dt
 from datetime import timedelta
 from typing import Any
@@ -29,9 +30,9 @@ def create_access_token(data: BaseModel, expires_delta: timedelta | None = None)
     to_encode = data.model_dump()
 
     if expires_delta:
-        expire = dt.now(datetime.timezone.utc) + expires_delta
+        expire = dt.now(UTC) + expires_delta
     else:
-        expire = dt.now(datetime.timezone.utc) + timedelta(minutes=15)
+        expire = dt.now(UTC) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
 
     try:
