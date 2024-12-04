@@ -5,13 +5,19 @@ from pydantic_settings import BaseSettings
 
 
 class GeneralConfig(BaseSettings):
-    LOG_LEVEL: Literal["INFO", "WARNING", "ERROR"] = "INFO"
+    log_level: Literal["INFO", "WARNING", "ERROR"] = "INFO"
     use_multicast_dns: bool = True
 
 
 class mDNSConfig(BaseSettings):
     hostname: str = "adaptiq_indoor_localization"
     port: int = 8001
+
+
+class JWTConfig(BaseSettings):
+    secret_key = "your_secret_key"
+    algorithm = "HS256"  # hashing algorithm
+    access_token_expire_minutes = 30  # Token expiry time in minutes
 
 
 class FastAPISettings(BaseSettings):
