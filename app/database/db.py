@@ -14,7 +14,7 @@ engine = create_engine(db_settings.db_dsn)
 session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def get_db() -> Generator[Session, Any, None]:
+def get_db_session() -> Generator[Session, Any, None]:
     db = session_local()
     try:
         yield db
