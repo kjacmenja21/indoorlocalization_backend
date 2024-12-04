@@ -15,9 +15,9 @@ class mDNSConfig(BaseSettings):
 
 
 class JWTConfig(BaseSettings):
-    secret_key = "your_secret_key"
-    algorithm = "HS256"  # hashing algorithm
-    access_token_expire_minutes = 30  # Token expiry time in minutes
+    secret_key: str = "your_secret_key"
+    algorithm: str = "HS256"  # hashing algorithm
+    access_token_expire_minutes: int = 30  # Token expiry time in minutes
 
 
 class FastAPISettings(BaseSettings):
