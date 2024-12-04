@@ -1,3 +1,6 @@
-class UserRepository:
-    def __init__(self, db_session):
-        self.db_session = db_session
+from app.database.repositories import SQLAlchemyRepository
+from app.models.user import User
+from app.schemas.db.user import UserModel
+
+
+class UserRepository(SQLAlchemyRepository[User, UserModel]): ...
