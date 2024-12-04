@@ -2,7 +2,7 @@ import logging
 from datetime import UTC
 from datetime import datetime as dt
 from datetime import timedelta
-from typing import Any
+from typing import Any, Optional
 
 import bcrypt
 from jose import JWTError, jwt
@@ -14,18 +14,17 @@ config = JWTConfig()
 logger = logging.getLogger(__name__)
 
 
-def verify_password(plain_password, hashed_password) -> bool:
+def verify_password(plain_password: str, hashed_password: bytes) -> bool:
     return bcrypt.checkpw(
         bytes(plain_password, encoding="utf-8"),
         bytes(hashed_password, encoding="utf-8"),
     )
 
 
-def get_password_hash(password: str) -> str:
-    return bcrypt.hashpw(
-        bytes(password, encoding="utf-8"),
-        bcrypt.gensalt(),
-    )
+def get_password_hash(password: str, salt: Optional[bytes]) -> tuple[bytes, bytes]:
+    if salt is None:
+        salt = bcrypt.gensalt()
+    return (bcrypt.hashpw(bytes(password, encoding="utf-8"), salt), salt)
 
 
 def create_access_token(data: BaseModel, expires_delta: timedelta | None = None) -> str:
