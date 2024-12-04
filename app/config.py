@@ -9,6 +9,11 @@ class GeneralConfig(BaseSettings):
     use_multicast_dns: bool = True
 
 
+class mDNSConfig(BaseSettings):
+    hostname: str = "adaptiq_indoor_localization"
+    port: int = 8001
+
+
 class FastAPISettings(BaseSettings):
     title: str = "Indoor Localization Backend"
     description: str = "# TODO write me down!"
