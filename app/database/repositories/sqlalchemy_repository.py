@@ -11,13 +11,12 @@ TPydantic = TypeVar("TPydantic", bound=BaseModel)
 
 
 class SQLAlchemyRepository(IRepository[TModel], Generic[TModel, TPydantic]):
-    def __init__(self, model: type[TModel], session: Session) -> None:
-        self.model = model
+    def __init__(self, session: Session) -> None:
         self.db_session = session
 
     def add(self, data: TPydantic) -> TModel:
         """Add a new entity to the database."""
-        db_entity = self.model(**data.model_dump())
+        db_entity = TModel(**data.model_dump())
         self.db_session.add(db_entity)
         self.db_session.commit()
         self.db_session.refresh(db_entity)
@@ -25,11 +24,11 @@ class SQLAlchemyRepository(IRepository[TModel], Generic[TModel, TPydantic]):
 
     def get(self, id: int) -> Optional[TModel]:
         """Retrieve an entity by its ID."""
-        return self.db_session.query(self.model).filter(self.model.id == id).first()
+        return self.db_session.query(TModel).filter(TModel.id == id).first()
 
     def get_all(self) -> List[TModel]:
         """Retrieve all entities."""
-        return self.db_session.query(self.model).all()
+        return self.db_session.query(TModel).all()
 
     def update(self, id: int, data: TPydantic) -> Optional[TModel]:
         """Update an entity by its ID."""
