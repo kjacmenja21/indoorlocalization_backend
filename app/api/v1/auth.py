@@ -6,7 +6,7 @@ from app.schemas.auth.token import Token
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@auth_router.get("/login")
+@auth_router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Token:
     user = None  # authenticate_user
     if not user:
