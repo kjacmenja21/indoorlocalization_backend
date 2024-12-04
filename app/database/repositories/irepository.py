@@ -1,6 +1,6 @@
 from typing import Generic, List, Optional, TypeVar
 
-T = TypeVar("T")
+from app.common.types import T
 
 
 class IRepository(Generic[T]):
