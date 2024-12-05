@@ -1,5 +1,7 @@
+from sqlalchemy import exists
 from sqlalchemy.orm import Session
 
+from app.functions.exceptions import not_found
 from app.functions.jwt import verify_password
 from app.models.user import User, UserRole
 from app.schemas.api.user import UserCreate, UserModel
@@ -19,14 +21,21 @@ class UserService:
             return user
 
     def create_user(self, user: UserCreate) -> User:
-        user_model = UserModel(**user.model_dump())
         role = self.session.query(UserRole).where(UserRole.name == user.role).first()
-
         if not role:
-            pass
+            raise not_found("Role does not exist!")
+
+        user_exists = self.session.query(
+            exists().where(User.username == user.username, User.email == user.email)
+        ).scalar()
+        if user_exists:
+            raise not_found("User already exists!")
+
+        user_model = UserModel(**user.model_dump())
         user_model.roleId = role.id
         new_user = User(**user_model.model_dump())
+
         self.session.add(new_user)
         self.session.commit()
 
-        return user_model
+        return new_user
