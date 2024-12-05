@@ -1,5 +1,4 @@
-from sqlalchemy import ForeignKey, Integer, String
-from sqlalchemy.dialects.postgresql import BYTEA
+from sqlalchemy import ForeignKey, Integer, LargeBinary, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.common import Base
@@ -13,8 +12,8 @@ class User(Base):
     first_name: Mapped[str] = mapped_column(String(50))
     last_name: Mapped[str] = mapped_column(String(50))
     contract: Mapped[str] = mapped_column(String(20))
-    password: Mapped[bytes] = mapped_column(BYTEA)
-    salt: Mapped[bytes] = mapped_column(BYTEA)
+    password: Mapped[LargeBinary] = mapped_column(LargeBinary)
+    salt: Mapped[LargeBinary] = mapped_column(LargeBinary)
     roleId: Mapped[int] = mapped_column(ForeignKey("userRole.id"))
 
 
