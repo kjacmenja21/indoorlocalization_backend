@@ -23,8 +23,12 @@ def verify_password(plain_password: str, hashed_password: bytes) -> bool:
 
 def get_password_hash(password: str, salt: Optional[bytes]) -> tuple[bytes, bytes]:
     if salt is None:
-        salt = bcrypt.gensalt()
+        salt = generate_salt()
     return (bcrypt.hashpw(bytes(password, encoding="utf-8"), salt), salt)
+
+
+def generate_salt() -> bytes:
+    return bcrypt.gensalt()
 
 
 def create_access_token(data: BaseModel, expires_delta: timedelta | None = None) -> str:
