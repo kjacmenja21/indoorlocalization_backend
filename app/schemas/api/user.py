@@ -13,14 +13,15 @@ class UserCreate(BaseModel):
 
 class UserRoleModel(BaseModel):
     id: int
-    name: str
+    name: Role
 
 
 class UserModel(BaseModel):
-    email: str
-    first_name: str
-    last_name: str
-    contract: str
-    password: str
-    salt: str
+    email: EmailStr
+    username: str
+    first_name: Optional[str]
+    last_name: Optional[str]
+    contract: Optional[str]
+    password: bytes
+    salt: bytes
     roleId: Optional[UserRoleModel]
