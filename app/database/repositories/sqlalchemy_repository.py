@@ -3,7 +3,7 @@ from typing import Generic, List, Optional, TypeVar
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.database.repositories.irepository import IRepository
+from app.database.repositories.interfaces.irepository import IRepository
 from app.models.common import Base
 
 TModel = TypeVar("TModel", bound=Base)
