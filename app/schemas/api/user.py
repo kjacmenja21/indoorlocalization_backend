@@ -7,9 +7,10 @@ from app.schemas.auth.user import Role
 
 
 class UserCreate(BaseModel):
+    username: str
     email: EmailStr
     plain_password: str
-    roleId: Role = Role.USER
+    role: Role = Role.USER
 
     @computed_field
     @property
@@ -19,7 +20,7 @@ class UserCreate(BaseModel):
     @computed_field
     @property
     def password(self) -> bytes:
-        return get_password_hash(self.plain_password, self.salt)
+        return get_password_hash(self.plain_password, self.salt)[0]
 
 
 class UserRoleModel(BaseModel):
@@ -30,9 +31,9 @@ class UserRoleModel(BaseModel):
 class UserModel(BaseModel):
     email: EmailStr
     username: str
-    first_name: Optional[str]
-    last_name: Optional[str]
-    contract: Optional[str]
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    contract: Optional[str] = None
     password: bytes
     salt: bytes
-    roleId: Optional[UserRoleModel]
+    roleId: Optional[UserRoleModel] = None
