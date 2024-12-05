@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
 
-from app.database.db import get_db_session
 from app.functions.jwt import verify_password
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.api.user import UserCreate, UserModel
 
 
@@ -20,10 +19,14 @@ class UserService:
             return user
 
     def create_user(self, user: UserCreate) -> User:
-        create_dump = user.model_dump()
-        create_dump.update()
+        user_model = UserModel(**user.model_dump())
+        role = self.session.query(UserRole).where(UserRole.name == user.role).first()
 
-        db_user = UserModel()
-        created_user = self.repository.add(db_user)
+        if not role:
+            pass
+        user_model.roleId = role.id
+        new_user = User(**user_model.model_dump())
+        self.session.add(new_user)
+        self.session.commit()
 
-        return created_user
+        return user_model
