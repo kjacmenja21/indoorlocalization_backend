@@ -9,7 +9,6 @@ from app.schemas.auth.user import Role
 
 
 class Token(BaseModel):
-    access_token: str
     token_type: str = "Bearer"
     scope: list[Role] = [Role.USER]
     expires_in: int
