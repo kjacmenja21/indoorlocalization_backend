@@ -43,7 +43,7 @@ def conflict(msg: str = "Resource already exists.") -> HTTPException:
     return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=msg)
 
 
-def expired_token(msg: str = "Token has expired.") -> HTTPException:
+def unauthorized(msg: str = "Token has expired.") -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=msg,
