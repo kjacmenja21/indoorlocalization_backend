@@ -20,7 +20,6 @@ class TokenEncode(BaseModel):
     token_type: str = "bearer"
     expires_in: int
     data: TokenData
-    scope: list[Role] = [Role.USER]
 
 
 class TokenDecode(TokenData):
