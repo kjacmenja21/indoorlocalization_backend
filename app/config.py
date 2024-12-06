@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings
 class GeneralConfig(BaseSettings):
     log_level: Literal["INFO", "WARNING", "ERROR"] = "INFO"
     use_multicast_dns: bool = True
+    refresh_token_cookie_name: str = "refresh-token"
 
 
 class mDNSConfig(BaseSettings):
