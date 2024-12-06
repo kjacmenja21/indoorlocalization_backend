@@ -34,11 +34,9 @@ def create_token(
     expires_delta: timedelta = timedelta(minutes=30),
     algorithm: str = "HS256",
 ) -> str:
-
     to_encode = data.model_dump(exclude_none=True)
 
-    if expires_delta:
-        expire = dt.now(UTC) + expires_delta
+    expire = dt.now(UTC) + expires_delta
     to_encode.update({"exp": expire})
 
     try:
