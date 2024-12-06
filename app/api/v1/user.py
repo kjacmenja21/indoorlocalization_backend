@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 
 from app.api.v1.dependancies import UserServiceDep, get_current_user_with_scope
 from app.functions.exceptions import unprocessable_entity
@@ -25,8 +26,15 @@ def user_create(
     user: UserCreate,
     user_service: UserServiceDep,
     token: Annotated[str, Depends(oauth2_scheme)],
-) -> None:
+):
     decoded = Token.decode(token=token, scope=[Role.ADMIN])
     new_user = user_service.create_user(user)
     if not new_user:
         raise unprocessable_entity()
+
+    return JSONResponse(
+        {
+            "message": "User successfully created.",
+            "user": new_user.model_dump(exclude=["salt", "password"]),
+        }
+    )
