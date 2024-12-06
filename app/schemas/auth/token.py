@@ -2,8 +2,9 @@ from datetime import UTC, datetime, timedelta
 
 from pydantic import BaseModel, Field, computed_field
 
+from app.config import JWTConfig
 from app.functions.exceptions import forbidden, unprocessable_entity
-from app.functions.jwt import create_access_token, decode_access_token
+from app.functions.jwt import create_token, decode_token
 from app.schemas.auth.token_extra import TokenData, TokenDecode, TokenEncode
 from app.schemas.auth.user import Role
 
@@ -20,7 +21,7 @@ class Token(BaseModel):
         return self.iat + timedelta(minutes=self.expires_in)
 
     def encode(self) -> TokenEncode:
-        token = create_access_token(self)
+        token = create_token(self, JWTConfig().access_token_secret_key)
         return TokenEncode(
             access_token=token,
             expires_in=self.expires_in,
@@ -30,7 +31,7 @@ class Token(BaseModel):
 
     @classmethod
     def decode(cls, token: str, scope: list[Role] | None = None) -> TokenDecode:
-        decoded_dict = decode_access_token(token)
+        decoded_dict = decode_token(token, JWTConfig().access_token_secret_key)
 
         if not decoded_dict:
             raise unprocessable_entity("Token invalid")
