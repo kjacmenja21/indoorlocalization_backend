@@ -34,10 +34,11 @@ class Token(BaseModel):
 
         if not decoded:
             raise unprocessable_entity("Token invalid")
+
         if scope:
-            if "admin" in decoded["scope"]:
+            if "admin" in decoded.scope:
                 ...
             elif not all(i in decoded["scope"] for i in scope):
                 raise forbidden(msg="Insufficient scope.")
 
-        return TokenDecode.model_validate(decoded)
+        return TokenDecode.model_validate(decoded.data)
