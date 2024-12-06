@@ -39,7 +39,7 @@ class Token(BaseModel):
         if scope:
             if "admin" in decoded.scope:
                 ...
-            elif not all(i in decoded["scope"] for i in scope):
+            elif not all(i in decoded.scope for i in scope):
                 raise forbidden(msg="Insufficient scope.")
 
         return TokenDecode(**decoded.model_dump())
