@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, computed_field
 
@@ -9,6 +10,9 @@ class TokenData(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     email: EmailStr
     username: str
+    iat: Optional[datetime] = None
+    exp: Optional[datetime] = None
+    scope: list[Role] = [Role.USER]
 
 
 class TokenEncode(BaseModel):
@@ -19,12 +23,7 @@ class TokenEncode(BaseModel):
     scope: list[Role] = [Role.USER]
 
 
-class TokenDecode(BaseModel):
-    iat: datetime
-    exp: datetime
-    scope: list[Role]
-    data: TokenData
-
+class TokenDecode(TokenData):
     @computed_field()
     def expires_in(self) -> float:
         return (self.exp - datetime.now(UTC)).total_seconds()
