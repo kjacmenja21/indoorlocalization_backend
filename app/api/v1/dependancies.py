@@ -6,7 +6,7 @@ from app.database.db import get_db_session
 from app.database.services import UserService
 from app.functions.exceptions import credentials_exception
 from app.functions.schemes import oauth2_scheme
-from app.schemas.api.user import UserBase, UserModel
+from app.schemas.api.user import UserBase
 from app.schemas.auth.token import Token
 from app.schemas.auth.user import Role
 
@@ -22,7 +22,7 @@ async def get_current_user(
     service: UserServiceDep,
     token: Annotated[str, Depends(oauth2_scheme)],
     scope: list[Role] | None = None,
-) -> UserModel:
+) -> UserBase:
     token_decoded = Token.decode(token=token, scope=scope)
 
     user = UserBase(**token_decoded.data.model_dump())
@@ -34,11 +34,11 @@ async def get_current_user(
     return user
 
 
-def get_current_user_with_scope(scope: list[Role]) -> UserModel:
+def get_current_user_with_scope(scope: list[Role]) -> UserBase:
     async def dependency(
         service: UserServiceDep,
         token: Annotated[str, Depends(oauth2_scheme)],
-    ) -> UserModel:
+    ) -> UserBase:
         return await get_current_user(service, token, scope=scope)
 
     return Depends(dependency)

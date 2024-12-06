@@ -43,6 +43,9 @@ class UserModel(UserBase):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     contract: Optional[str] = None
+    role: Optional[UserRoleModel] = None
+
+
+class UserModelCredentials(UserModel):
     password: bytes
     salt: bytes
-    role: Optional[UserRoleModel] = None

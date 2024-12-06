@@ -4,7 +4,13 @@ from sqlalchemy.orm import Session, joinedload
 from app.functions.exceptions import not_found
 from app.functions.jwt import verify_password
 from app.models.user import User, UserRole
-from app.schemas.api.user import UserBase, UserCreate, UserModel, UserRoleModel
+from app.schemas.api.user import (
+    UserBase,
+    UserCreate,
+    UserModel,
+    UserModelCredentials,
+    UserRoleModel,
+)
 
 
 class UserService:
@@ -28,7 +34,7 @@ class UserService:
         if self.user_exists(user):
             raise not_found("User already exists!")
 
-        user_model = UserModel(**user.model_dump(exclude="role"))
+        user_model = UserModelCredentials(**user.model_dump(exclude="role"))
 
         new_user = User(**user_model.model_dump(exclude_none=True))
         new_user.role = role

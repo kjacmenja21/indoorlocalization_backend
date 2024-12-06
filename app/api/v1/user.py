@@ -16,9 +16,11 @@ user_router = APIRouter(prefix="/users", tags=["User"])
 @user_router.get("/")
 async def get_all_users(
     user_service: UserServiceDep,
-    user: UserModel = get_current_user_with_scope([Role.ADMIN]),
+    _: UserModel = get_current_user_with_scope([Role.ADMIN]),
 ) -> list[UserModel]:
-    return user_service.get_all_users()
+    users = user_service.get_all_users()
+
+    return [user.model_dump() for user in users]
 
 
 @user_router.post("/")
@@ -26,7 +28,7 @@ def user_create(
     user: UserCreate,
     user_service: UserServiceDep,
     token: Annotated[str, Depends(oauth2_scheme)],
-):
+) -> JSONResponse:
     decoded = Token.decode(token=token, scope=[Role.ADMIN])
     new_user = user_service.create_user(user)
     if not new_user:
@@ -35,6 +37,6 @@ def user_create(
     return JSONResponse(
         {
             "message": "User successfully created.",
-            "user": new_user.model_dump(exclude=["salt", "password"]),
+            "user": new_user.model_dump(),
         }
     )
