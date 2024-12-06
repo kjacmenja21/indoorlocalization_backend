@@ -4,6 +4,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     EmailStr,
+    Field,
     SecretStr,
     computed_field,
     field_validator,
@@ -14,10 +15,14 @@ from app.schemas.auth.user import Role
 
 
 class UserBase(BaseModel):
-    username: str
+    username: str = Field(examples=["bobbybjorn", "clarawalk", "agnes_endsworth"])
     email: EmailStr
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
+    first_name: Optional[str] = Field(
+        default=None, examples=["Bobby", "Clara", "Agnes"]
+    )
+    last_name: Optional[str] = Field(
+        default=None, examples=["Bjorn", "Walk", "Endsworth"]
+    )
     contract: Optional[str] = None
 
 
