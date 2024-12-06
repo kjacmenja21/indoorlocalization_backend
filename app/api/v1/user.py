@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 
 from app.api.v1.dependancies import UserServiceDep, get_current_user_with_scope
@@ -25,9 +25,9 @@ async def get_all_users(
 
 @user_router.post("/")
 def user_create(
-    user: UserCreate,
     user_service: UserServiceDep,
     token: Annotated[str, Depends(oauth2_scheme)],
+    user: UserCreate = Query(UserCreate),
 ) -> JSONResponse:
     decoded = Token.decode(token=token, scope=[Role.ADMIN])
     new_user = user_service.create_user(user)

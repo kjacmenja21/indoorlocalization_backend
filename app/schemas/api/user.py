@@ -9,6 +9,9 @@ from app.schemas.auth.user import Role
 class UserBase(BaseModel):
     username: str
     email: EmailStr
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    contract: Optional[str] = None
 
 
 class UserCreate(UserBase):
@@ -40,9 +43,6 @@ class UserRoleModel(BaseModel):
 
 class UserModel(UserBase):
     model_config = ConfigDict(from_attributes=True)
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    contract: Optional[str] = None
     role: Optional[UserRoleModel] = None
 
 
