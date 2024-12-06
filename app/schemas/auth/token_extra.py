@@ -1,9 +1,20 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, computed_field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
 
+from app.config import JWTConfig
 from app.schemas.auth.user import Role
+
+
+class RefreshTokenData(BaseModel):
+    client_id: int
+    iat: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    expires_in: int = JWTConfig().refresh_token_expire_minutes
+
+    @computed_field
+    def exp(self) -> datetime:
+        return self.iat + timedelta(minutes=self.expires_in)
 
 
 class TokenData(BaseModel):
@@ -17,6 +28,7 @@ class TokenData(BaseModel):
 
 class TokenEncode(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     expires_in: int
     data: TokenData

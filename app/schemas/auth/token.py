@@ -1,11 +1,17 @@
 from datetime import UTC, datetime, timedelta
+from typing import Optional
 
 from pydantic import BaseModel, Field, computed_field
 
 from app.config import JWTConfig
 from app.functions.exceptions import forbidden, unprocessable_entity
 from app.functions.jwt import create_token, decode_token
-from app.schemas.auth.token_extra import TokenData, TokenDecode, TokenEncode
+from app.schemas.auth.token_extra import (
+    RefreshTokenData,
+    TokenData,
+    TokenDecode,
+    TokenEncode,
+)
 from app.schemas.auth.user import Role
 
 
@@ -14,6 +20,7 @@ class Token(BaseModel):
     scope: list[Role] = [Role.USER]
     expires_in: int
     data: TokenData
+    refresh_data: Optional[RefreshTokenData]
     iat: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @computed_field
@@ -25,8 +32,12 @@ class Token(BaseModel):
         self.data.exp = self.exp
 
         access_token = create_token(self.data, JWTConfig().access_token_secret_key)
+        refresh_token = create_token(
+            self.refresh_data, JWTConfig().refresh_token_secret_key
+        )
         return TokenEncode(
             access_token=access_token,
+            refresh_token=refresh_token,
             expires_in=self.expires_in,
             scope=self.scope,
             data=self.data,
