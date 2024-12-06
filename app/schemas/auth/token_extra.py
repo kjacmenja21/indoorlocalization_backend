@@ -1,15 +1,25 @@
 from datetime import UTC, datetime
+from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, EmailStr, computed_field
 
 from app.schemas.auth.user import Role
+
+
+class TokenData(BaseModel):
+    email: EmailStr
+    username: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    contract: Optional[str] = None
 
 
 class TokenEncode(BaseModel):
     access_token: str
     token_type: str = "bearer"
     expires_in: int
+    data: BaseModel
     scope: list[Role] = [Role.USER]
 
 
