@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.v1.dependancies import UserServiceDep
+from app.api.dependancies import UserServiceDep
 from app.config import GeneralConfig, JWTConfig
 from app.functions.exceptions import unauthorized_bearer
 from app.schemas.auth.token import Token

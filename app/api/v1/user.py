@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
 
-from app.api.v1.dependancies import UserServiceDep, get_current_user_with_scope
+from app.api.dependancies import UserServiceDep, get_current_user_with_scope
 from app.functions.exceptions import unprocessable_entity
 from app.schemas.api.user import UserBase, UserCreate, UserModel
 from app.schemas.auth.user import Role
