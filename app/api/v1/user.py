@@ -37,6 +37,6 @@ def user_create(
     return JSONResponse(
         {
             "message": "User successfully created.",
-            "user": new_user.model_dump(),
+            "user": new_user,
         }
     )
