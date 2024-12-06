@@ -6,9 +6,12 @@ from app.functions.jwt import generate_salt, get_password_hash
 from app.schemas.auth.user import Role
 
 
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
     username: str
     email: EmailStr
+
+
+class UserCreate(UserBase):
     plain_password: str
     role: Role = Role.USER
 
@@ -35,10 +38,8 @@ class UserRoleModel(BaseModel):
     name: Role
 
 
-class UserModel(BaseModel):
+class UserModel(UserBase):
     model_config = ConfigDict(from_attributes=True)
-    email: EmailStr
-    username: str
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     contract: Optional[str] = None
