@@ -1,9 +1,9 @@
-import uuid
 from datetime import UTC, datetime
 from enum import Enum
 from typing import Optional
+from uuid import uuid4
 
-from pydantic import UUID4, BaseModel, ConfigDict, EmailStr, computed_field
+from pydantic import BaseModel, ConfigDict, EmailStr, computed_field
 
 from app.schemas.auth.user import Role
 
@@ -27,8 +27,8 @@ class RefreshTokenData(BaseModel):
     scope: list[Role] = [Role.USER]
 
     @computed_field
-    def uuid(self) -> UUID4:
-        return uuid.uuid4()
+    def uuid(self) -> str:
+        return uuid4().hex
 
 
 class TokenEncode(BaseModel):
