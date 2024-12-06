@@ -1,4 +1,4 @@
-from sqlalchemy import exists
+from sqlalchemy import and_, exists
 from sqlalchemy.orm import Session, joinedload
 
 from app.functions.exceptions import not_found
@@ -9,6 +9,7 @@ from app.schemas.api.user import (
     UserCreate,
     UserModel,
     UserModelCredentials,
+    UserModelIndentified,
     UserRoleModel,
 )
 
@@ -54,6 +55,16 @@ class UserService:
             users.append(user_model)
 
         return users
+
+    def get_user(self, user: UserBase) -> UserModelIndentified:
+        field_values = user.model_dump(exclude_unset=True, exclude_none=True)
+        filters = [
+            getattr(User, field) == value for field, value in field_values.items()
+        ]
+
+        user = self.session.query(User).filter(and_(*filters)).first()
+
+        return UserModelIndentified.model_validate(user)
 
     def user_from_orm(self, user: User) -> UserModel:
         user_role = UserRoleModel.model_validate(user.role) if user.role else None
