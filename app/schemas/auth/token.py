@@ -21,9 +21,12 @@ class Token(BaseModel):
         return self.iat + timedelta(minutes=self.expires_in)
 
     def encode(self) -> TokenEncode:
-        token = create_token(self, JWTConfig().access_token_secret_key)
+        self.data.iat = self.iat
+        self.data.exp = self.exp
+
+        access_token = create_token(self.data, JWTConfig().access_token_secret_key)
         return TokenEncode(
-            access_token=token,
+            access_token=access_token,
             expires_in=self.expires_in,
             scope=self.scope,
             data=self.data,
@@ -36,12 +39,12 @@ class Token(BaseModel):
         if not decoded_dict:
             raise unprocessable_entity("Token invalid")
 
-        decoded = Token.model_validate(decoded_dict)
+        decoded = TokenDecode.model_validate(decoded_dict)
 
         if scope:
-            if "admin" in decoded.scope:
+            if Role.ADMIN in decoded.scope:
                 ...
             elif not all(i in decoded.scope for i in scope):
                 raise forbidden(msg="Insufficient scope.")
 
-        return TokenDecode(**decoded.model_dump())
+        return decoded
