@@ -59,16 +59,8 @@ class Token(BaseModel):
         return access_token
 
     @classmethod
-    def decode(
-        cls,
-        token: str,
-        scope: list[Role] | None = None,
-        type: TokenType = TokenType.ACCESS,
-    ) -> TokenDecode:
-        if type == TokenType.ACCESS:
-            key = cfg.access_token_secret_key
-        else:
-            key = cfg.refresh_token_secret_key
+    def decode_access(cls, token: str, scope: list[Role] | None = None) -> TokenDecode:
+        key = cfg.access_token_secret_key
 
         decoded_dict = decode_token(token, key, cfg.algorithm)
 

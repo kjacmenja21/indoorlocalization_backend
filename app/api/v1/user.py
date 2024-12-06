@@ -30,7 +30,7 @@ def user_create(
     token: Annotated[str, Depends(oauth2_scheme)],
     user: UserCreate = Query(UserCreate),
 ) -> JSONResponse:
-    decoded = Token.decode(token=token, scope=[Role.ADMIN], type=TokenType.ACCESS)
+    decoded = Token.decode_access(token=token, scope=[Role.ADMIN])
     new_user = user_service.create_user(user)
     if not new_user:
         raise unprocessable_entity()

@@ -25,7 +25,7 @@ async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     scope: list[Role] | None = None,
 ) -> UserBase:
-    token_decoded = Token.decode(token=token, scope=scope, type=TokenType.ACCESS)
+    token_decoded = Token.decode_access(token=token, scope=scope)
 
     user = UserBase(**token_decoded.data.model_dump())
 
