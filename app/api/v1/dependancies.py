@@ -25,10 +25,10 @@ async def get_current_user(
 ) -> UserBase:
     token_decoded = Token.decode(token=token, scope=scope)
 
-    user = UserBase(**token_decoded.data.model_dump())
+    user = UserBase(**token_decoded.model_dump())
 
     user_exists = service.user_exists(user)
-    if user_exists == False:
+    if user_exists is False:
         raise credentials_exception()
 
     return user
