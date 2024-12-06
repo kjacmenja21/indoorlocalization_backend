@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import TypeAdapter
 
 from app.api.v1.dependancies import UserServiceDep
 from app.config import JWTConfig
