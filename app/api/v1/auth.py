@@ -72,4 +72,6 @@ async def refresh_token(
         scope=data.scope,
     )
     access_token = token.generate_access_token()
-    return JSONResponse({"token": access_token, "email": user.email}, status_code=200)
+    return JSONResponse(
+        {"access_token": access_token, "email": user.email}, status_code=200
+    )
