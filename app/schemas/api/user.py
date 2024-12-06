@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, computed_field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, computed_field, field_validator
 
 from app.functions.jwt import generate_salt, get_password_hash
 from app.schemas.auth.user import Role
@@ -35,6 +35,7 @@ class UserRoleModel(BaseModel):
 
 
 class UserModel(BaseModel):
+    config = ConfigDict(from_attributes=True)
     email: EmailStr
     username: str
     first_name: Optional[str] = None
