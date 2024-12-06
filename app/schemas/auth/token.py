@@ -5,10 +5,10 @@ from pydantic import BaseModel, Field, computed_field
 from app.config import JWTConfig
 from app.functions.exceptions import forbidden, unprocessable_entity
 from app.functions.jwt import create_token, decode_token
-from app.schemas.auth.token_extra import TokenData, TokenDecode, TokenEncode
+from app.schemas.auth.token_extra import TokenData, TokenDecode, TokenEncode, TokenType
 from app.schemas.auth.user import Role
 
-config = JWTConfig()
+cfg = JWTConfig()
 
 
 class Token(BaseModel):
@@ -23,17 +23,40 @@ class Token(BaseModel):
         return self.iat + timedelta(minutes=self.expires_in)
 
     def encode(self) -> TokenEncode:
-        token = create_token(self, config.secret_key, config.algorithm)
+
+        access_token = create_token(
+            self,
+            cfg.secret_key,
+            timedelta(minutes=cfg.access_token_expire_minutes),
+            cfg.algorithm,
+        )
+
+        refresh_token = create_token(
+            BaseModel({"test": "data"}),
+            cfg.refresh_token_secret_key,
+            timedelta(minutes=cfg.refresh_token_expire_minutes),
+            cfg.algorithm,
+        )
+
         return TokenEncode(
-            access_token=token,
+            access_token=access_token,
+            refresh_token=refresh_token,
             expires_in=self.expires_in,
             scope=self.scope,
             data=self.data,
         )
 
     @classmethod
-    def decode(cls, token: str, scope: list[Role] | None = None) -> TokenDecode:
-        decoded_dict = decode_token(token, config.secret_key, config.algorithm)
+    def decode(
+        cls,
+        token: str,
+        scope: list[Role] | None = None,
+        type: TokenType = TokenType.ACCESS,
+    ) -> TokenDecode:
+        if type == TokenType.ACCESS:
+            key = cfg
+
+        decoded_dict = decode_token(token, key, cfg.algorithm)
 
         if not decoded_dict:
             raise unprocessable_entity("Token invalid")
