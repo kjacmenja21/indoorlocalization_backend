@@ -18,14 +18,16 @@ class UserService:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def authenticate_user(self, username: str, password: str) -> None | UserModel:
+    def authenticate_user(
+        self, username: str, password: str
+    ) -> None | UserModelIndentified:
         user = self.session.query(User).where(User.username == username).first()
 
         if user is None:
             return None
 
         if verify_password(password, user.password):
-            return self.user_from_orm(user)
+            return UserModelIndentified.model_validate(user)
 
     def create_user(self, user: UserCreate) -> UserModel:
         role = self.session.query(UserRole).where(UserRole.name == user.role).first()
