@@ -58,13 +58,19 @@ class UserService:
 
         return users
 
-    def get_user(self, user: UserBase) -> UserModelIndentified:
-        field_values = user.model_dump(include=["username", "email"])
-        filters = [
-            getattr(User, field) == value for field, value in field_values.items()
-        ]
+    def get_user(self, user: UserBase | int) -> UserModelIndentified:
+        filter_query = None
+        if user is UserBase:
+            field_values = user.model_dump(include=["username", "email"])
+            filters = [
+                getattr(User, field) == value for field, value in field_values.items()
+            ]
+            filter_query = and_(*filters)
 
-        user = self.session.query(User).filter(and_(*filters)).first()
+        if isinstance(user, int):
+            filter_query = and_(User.id == user)
+
+        user = self.session.query(User).filter(filter_query).first()
 
         return UserModelIndentified.model_validate(user)
 
