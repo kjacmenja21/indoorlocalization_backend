@@ -21,9 +21,10 @@ def login(
         raise unauthorized_bearer()
 
     data = TokenData.model_validate(user)
+    data.scope = [user.role.name]
 
     return Token(
         expires_in=JWTConfig().access_token_expire_minutes,
         data=data,
-        scope=[user.role.name],
+        scope=data.scope,
     ).encode()
