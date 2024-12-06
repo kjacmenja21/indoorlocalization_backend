@@ -33,7 +33,7 @@ def generate_salt() -> bytes:
 
 def create_access_token(data: BaseModel, expires_delta: timedelta | None = None) -> str:
 
-    to_encode = data.model_dump()
+    to_encode = data.model_dump(exclude_none=True)
 
     if expires_delta:
         expire = dt.now(UTC) + expires_delta

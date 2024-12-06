@@ -1,16 +1,17 @@
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import TypeAdapter
 
 from app.api.v1.dependancies import UserServiceDep
 from app.config import JWTConfig
 from app.functions.exceptions import unauthorized_bearer
 from app.schemas.auth.token import Token
-from app.schemas.auth.token_extra import TokenEncode
+from app.schemas.auth.token_extra import TokenData, TokenEncode
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@auth_router.post("/login")
+@auth_router.post("/login", response_model_exclude_none=True)
 def login(
     user_service: UserServiceDep,
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -20,4 +21,9 @@ def login(
     if not user:
         raise unauthorized_bearer()
 
-    return Token(expires_in=JWTConfig().access_token_expire_minutes).encode()
+    data = TokenData.model_validate(user)
+
+    return Token(
+        expires_in=JWTConfig().access_token_expire_minutes,
+        data=data,
+    ).encode()
