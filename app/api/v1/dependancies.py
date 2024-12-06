@@ -6,7 +6,7 @@ from app.database.db import get_db_session
 from app.database.services import UserService
 from app.functions.exceptions import credentials_exception
 from app.functions.schemes import oauth2_scheme
-from app.schemas.api.user import UserModel
+from app.schemas.api.user import UserBase, UserModel
 from app.schemas.auth.token import Token
 from app.schemas.auth.user import Role
 
@@ -25,7 +25,7 @@ async def get_current_user(
 ) -> UserModel:
     token_decoded = Token.decode(token=token, scope=scope)
 
-    user = UserModel(**token_decoded.data.model_dump())
+    user = UserBase(**token_decoded.data.model_dump())
 
     user_exists = service.user_exists(user)
     if user_exists == False:
