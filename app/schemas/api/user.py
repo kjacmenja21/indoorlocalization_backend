@@ -46,6 +46,10 @@ class UserModel(UserBase):
     role: Optional[UserRoleModel] = None
 
 
+class UserModelIndentified(UserModel):
+    id: int
+
+
 class UserModelCredentials(UserModel):
     password: bytes
     salt: bytes
