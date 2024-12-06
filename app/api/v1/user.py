@@ -8,6 +8,7 @@ from app.functions.exceptions import unprocessable_entity
 from app.functions.schemes import oauth2_scheme
 from app.schemas.api.user import UserCreate, UserModel
 from app.schemas.auth.token import Token
+from app.schemas.auth.token_extra import TokenType
 from app.schemas.auth.user import Role
 
 user_router = APIRouter(prefix="/users", tags=["User"])
@@ -29,7 +30,7 @@ def user_create(
     token: Annotated[str, Depends(oauth2_scheme)],
     user: UserCreate = Query(UserCreate),
 ) -> JSONResponse:
-    decoded = Token.decode(token=token, scope=[Role.ADMIN])
+    decoded = Token.decode(token=token, scope=[Role.ADMIN], type=TokenType.ACCESS)
     new_user = user_service.create_user(user)
     if not new_user:
         raise unprocessable_entity()
