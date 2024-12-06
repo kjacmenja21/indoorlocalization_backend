@@ -30,6 +30,7 @@ class UserCreate(BaseModel):
 
 
 class UserRoleModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     name: Role
 
@@ -43,4 +44,4 @@ class UserModel(BaseModel):
     contract: Optional[str] = None
     password: bytes
     salt: bytes
-    roleId: Optional[UserRoleModel] = None
+    role: Optional[UserRoleModel] = None

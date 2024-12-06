@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import ForeignKey, Integer, LargeBinary, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -8,7 +10,7 @@ class UserRole(Base):
     __tablename__ = "userRole"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(20))
-    users = relationship("User", back_populates="role")
+    users: Mapped[list["User"]] = relationship(back_populates="role")
 
 
 class User(Base):
@@ -22,4 +24,4 @@ class User(Base):
     password: Mapped[LargeBinary] = mapped_column(LargeBinary)
     salt: Mapped[LargeBinary] = mapped_column(LargeBinary)
     roleId: Mapped[int] = mapped_column(ForeignKey("userRole.id"))
-    role = relationship("UserRole", back_populates="users")
+    role: Mapped[Optional[UserRole]] = relationship("UserRole", back_populates="users")
