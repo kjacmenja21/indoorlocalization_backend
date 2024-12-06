@@ -35,7 +35,7 @@ class UserRoleModel(BaseModel):
 
 
 class UserModel(BaseModel):
-    config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
     email: EmailStr
     username: str
     first_name: Optional[str] = None
