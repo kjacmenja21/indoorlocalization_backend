@@ -8,9 +8,6 @@ import bcrypt
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
-from app.config import JWTConfig
-
-config = JWTConfig()
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +28,12 @@ def generate_salt() -> bytes:
     return bcrypt.gensalt()
 
 
-def create_access_token(data: BaseModel, expires_delta: timedelta | None = None) -> str:
+def create_token(
+    data: BaseModel,
+    key: str,
+    expires_delta: timedelta | None = None,
+    algorithm: str = "HS256",
+) -> str:
 
     to_encode = data.model_dump(exclude_none=True)
 
@@ -42,17 +44,17 @@ def create_access_token(data: BaseModel, expires_delta: timedelta | None = None)
     to_encode.update({"exp": expire})
 
     try:
-        encoded_jwt = jwt.encode(
-            to_encode, config.secret_key, algorithm=config.algorithm
-        )
+        encoded_jwt = jwt.encode(to_encode, key=key, algorithm=algorithm)
         return encoded_jwt
     except JWTError as e:
         logger.error(e)
 
 
-def decode_access_token(token: str) -> dict[str, Any] | None:
+def decode_token(
+    token: str, key: str, algorithm: str = "HS256"
+) -> dict[str, Any] | None:
     try:
-        payload = jwt.decode(token, config.secret_key, algorithms=[config.algorithm])
+        payload = jwt.decode(token, key=key, algorithms=[algorithm])
         return payload
     except JWTError:
         return None
