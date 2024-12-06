@@ -28,9 +28,10 @@ class UserService:
         if self.user_exists(user):
             raise not_found("User already exists!")
 
-        user_model = UserModel(**user.model_dump())
-        new_user = User(**user_model.model_dump(), role=role)
+        user_model = UserModel(**user.model_dump(exclude="role"))
 
+        new_user = User(**user_model.model_dump(exclude_none=True))
+        new_user.role = role
         self.session.add(new_user)
         self.session.commit()
 
@@ -54,7 +55,10 @@ class UserService:
         return user_model
 
     def user_exists(self, user: UserBase) -> bool:
+
         user_exists = self.session.query(
-            exists().where(User.username == user.username, User.email == user.email)
+            exists().where(
+                (User.username == user.username) | (User.email == user.email)
+            )
         ).scalar()
         return bool(user_exists)
