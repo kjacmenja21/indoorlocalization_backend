@@ -1,29 +1,18 @@
 from datetime import UTC, datetime, timedelta
-from typing import Optional
 
 from pydantic import BaseModel, Field, computed_field
 
-from app.config import JWTConfig
 from app.functions.exceptions import forbidden, unprocessable_entity
-from app.functions.jwt import create_token, decode_token
-from app.schemas.auth.token_extra import (
-    AccessTokenData,
-    RefreshTokenData,
-    TokenDecode,
-    TokenEncode,
-    TokenType,
-)
+from app.functions.jwt import create_access_token, decode_access_token
+from app.schemas.auth.token_extra import TokenData, TokenDecode, TokenEncode
 from app.schemas.auth.user import Role
-
-cfg = JWTConfig()
 
 
 class Token(BaseModel):
     token_type: str = "Bearer"
     scope: list[Role] = [Role.USER]
-    expires_in: int = cfg.access_token_expire_minutes
-    access_data: AccessTokenData
-    refresh_data: Optional[RefreshTokenData] = None
+    expires_in: int
+    data: TokenData
     iat: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @computed_field
@@ -31,38 +20,17 @@ class Token(BaseModel):
         return self.iat + timedelta(minutes=self.expires_in)
 
     def encode(self) -> TokenEncode:
-        access_token = self.encode_access_token()
-
-        refresh_token = create_token(
-            self.refresh_data,
-            cfg.refresh_token_secret_key,
-            timedelta(minutes=cfg.refresh_token_expire_minutes),
-            cfg.algorithm,
-        )
-
+        token = create_access_token(self)
         return TokenEncode(
-            access_token=access_token,
-            refresh_token=refresh_token,
+            access_token=token,
             expires_in=self.expires_in,
             scope=self.scope,
-            data=self.access_data,
+            data=self.data,
         )
-
-    def encode_access_token(self) -> str:
-        access_token = create_token(
-            self.access_data,
-            cfg.access_token_secret_key,
-            timedelta(minutes=cfg.access_token_expire_minutes),
-            cfg.algorithm,
-        )
-
-        return access_token
 
     @classmethod
-    def decode_access(cls, token: str, scope: list[Role] | None = None) -> TokenDecode:
-        key = cfg.access_token_secret_key
-
-        decoded_dict = decode_token(token, key, cfg.algorithm)
+    def decode(cls, token: str, scope: list[Role] | None = None) -> TokenDecode:
+        decoded_dict = decode_access_token(token)
 
         if not decoded_dict:
             raise unprocessable_entity("Token invalid")
