@@ -1,6 +1,13 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, computed_field, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    SecretStr,
+    computed_field,
+    field_validator,
+)
 
 from app.functions.jwt import generate_salt, get_password_hash
 from app.schemas.auth.user import Role
@@ -15,7 +22,7 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    plain_password: str
+    plain_password: SecretStr
     role: Role = Role.USER
 
     @computed_field
@@ -28,6 +35,7 @@ class UserCreate(UserBase):
     def password(self) -> bytes:
         return get_password_hash(self.plain_password, self.salt)[0]
 
+    @classmethod
     @field_validator("role", mode="before")
     def validate_lowercase(cls, value):
         if not isinstance(value, str):
