@@ -1,5 +1,4 @@
 from datetime import UTC, datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, computed_field
 
@@ -10,9 +9,6 @@ class TokenData(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     email: EmailStr
     username: str
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    contract: Optional[str] = None
 
 
 class TokenEncode(BaseModel):
