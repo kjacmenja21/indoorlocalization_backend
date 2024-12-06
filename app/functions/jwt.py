@@ -31,7 +31,7 @@ def generate_salt() -> bytes:
 def create_token(
     data: BaseModel,
     key: str,
-    expires_delta: timedelta | None = None,
+    expires_delta: timedelta = timedelta(minutes=30),
     algorithm: str = "HS256",
 ) -> str:
 
@@ -39,8 +39,6 @@ def create_token(
 
     if expires_delta:
         expire = dt.now(UTC) + expires_delta
-    else:
-        expire = dt.now(UTC) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
 
     try:
