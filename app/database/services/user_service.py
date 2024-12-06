@@ -61,10 +61,8 @@ class UserService:
         return user_model
 
     def user_exists(self, user: UserBase) -> bool:
-
-        user_exists = self.session.query(
-            exists().where(
-                (User.username == user.username) | (User.email == user.email)
-            )
-        ).scalar()
+        query = exists().where(
+            (User.username == user.username) | (User.email == user.email)
+        )
+        user_exists = self.session.query(query).scalar()
         return bool(user_exists)
