@@ -21,7 +21,7 @@ cfg = JWTConfig()
 class Token(BaseModel):
     token_type: str = "Bearer"
     scope: list[Role] = [Role.USER]
-    expires_in: int
+    expires_in: int = cfg.access_token_expire_minutes
     access_data: AccessTokenData
     refresh_data: Optional[RefreshTokenData] = None
     iat: datetime = Field(default_factory=lambda: datetime.now(UTC))
@@ -51,7 +51,7 @@ class Token(BaseModel):
     def encode_access_token(self) -> str:
         access_token = create_token(
             self.access_data,
-            cfg.secret_key,
+            cfg.access_token_secret_key,
             timedelta(minutes=cfg.access_token_expire_minutes),
             cfg.algorithm,
         )
@@ -66,7 +66,9 @@ class Token(BaseModel):
         type: TokenType = TokenType.ACCESS,
     ) -> TokenDecode:
         if type == TokenType.ACCESS:
-            key = cfg
+            key = cfg.access_token_secret_key
+        else:
+            key = cfg.refresh_token_secret_key
 
         decoded_dict = decode_token(token, key, cfg.algorithm)
 

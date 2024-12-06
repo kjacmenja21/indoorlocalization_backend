@@ -16,7 +16,7 @@ class mDNSConfig(BaseSettings):
 
 
 class JWTConfig(BaseSettings):
-    secret_key: str = "supersecretkey"
+    access_token_secret_key: str = "supersecretkey"
     refresh_token_secret_key: str = "refreshtokensecret"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
