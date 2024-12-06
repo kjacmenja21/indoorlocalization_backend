@@ -2,12 +2,13 @@ from datetime import UTC, datetime
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, computed_field
+from pydantic import BaseModel, ConfigDict, EmailStr, computed_field
 
 from app.schemas.auth.user import Role
 
 
 class TokenData(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     email: EmailStr
     username: str
     first_name: Optional[str] = None
@@ -19,7 +20,7 @@ class TokenEncode(BaseModel):
     access_token: str
     token_type: str = "bearer"
     expires_in: int
-    data: BaseModel
+    data: TokenData
     scope: list[Role] = [Role.USER]
 
 
