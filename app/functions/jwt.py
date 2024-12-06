@@ -2,13 +2,14 @@ import logging
 from datetime import UTC
 from datetime import datetime as dt
 from datetime import timedelta
-from typing import Any, Optional
+from typing import Optional
 
 import bcrypt
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
 from app.config import JWTConfig
+from app.schemas.auth.token import Token
 
 config = JWTConfig()
 logger = logging.getLogger(__name__)
@@ -50,9 +51,9 @@ def create_access_token(data: BaseModel, expires_delta: timedelta | None = None)
         logger.error(e)
 
 
-def decode_access_token(token: str) -> dict[str, Any] | None:
+def decode_access_token(token: str) -> Token | None:
     try:
         payload = jwt.decode(token, config.secret_key, algorithms=[config.algorithm])
-        return payload
+        return Token.model_validate(payload)
     except JWTError:
         return None
