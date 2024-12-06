@@ -1,6 +1,5 @@
 from datetime import UTC, datetime
 from typing import Optional
-from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, computed_field
 
@@ -25,7 +24,6 @@ class TokenEncode(BaseModel):
 
 
 class TokenDecode(BaseModel):
-    id: UUID
     iat: datetime
     exp: datetime
     scope: list[Role]

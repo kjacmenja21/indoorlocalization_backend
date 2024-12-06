@@ -1,8 +1,6 @@
 from datetime import UTC, datetime, timedelta
-from typing import Annotated
-from uuid import UUID
 
-from pydantic import AfterValidator, BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field
 
 from app.functions.exceptions import forbidden, unprocessable_entity
 from app.functions.jwt import create_access_token, decode_access_token
@@ -11,7 +9,6 @@ from app.schemas.auth.user import Role
 
 
 class Token(BaseModel):
-    id: Annotated[UUID, AfterValidator(lambda x: x.hex)]
     token_type: str = "Bearer"
     scope: list[Role] = [Role.USER]
     expires_in: int
@@ -33,8 +30,9 @@ class Token(BaseModel):
 
     @classmethod
     def decode(cls, token: str, scope: list[Role] | None = None) -> TokenDecode:
-        decoded = decode_access_token(token)
+        decoded_dict = decode_access_token(token)
 
+        decoded = Token.model_validate(decoded_dict)
         if not decoded:
             raise unprocessable_entity("Token invalid")
 
