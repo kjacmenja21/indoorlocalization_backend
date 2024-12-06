@@ -12,7 +12,7 @@ class TokenType(Enum):
     REFRESH = "refresh"
 
 
-class TokenData(BaseModel):
+class AccessTokenData(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     email: EmailStr
     username: str
@@ -26,7 +26,7 @@ class TokenEncode(BaseModel):
     refresh_token: str
     token_type: str = "bearer"
     expires_in: int
-    data: TokenData
+    data: AccessTokenData
     scope: list[Role] = [Role.USER]
 
 
@@ -34,7 +34,7 @@ class TokenDecode(BaseModel):
     iat: datetime
     exp: datetime
     scope: list[Role]
-    data: TokenData
+    data: AccessTokenData
 
     @computed_field()
     def expires_in(self) -> float:

@@ -5,7 +5,12 @@ from pydantic import BaseModel, Field, computed_field
 from app.config import JWTConfig
 from app.functions.exceptions import forbidden, unprocessable_entity
 from app.functions.jwt import create_token, decode_token
-from app.schemas.auth.token_extra import TokenData, TokenDecode, TokenEncode, TokenType
+from app.schemas.auth.token_extra import (
+    AccessTokenData,
+    TokenDecode,
+    TokenEncode,
+    TokenType,
+)
 from app.schemas.auth.user import Role
 
 cfg = JWTConfig()
@@ -15,7 +20,7 @@ class Token(BaseModel):
     token_type: str = "Bearer"
     scope: list[Role] = [Role.USER]
     expires_in: int
-    data: TokenData
+    data: AccessTokenData
     iat: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @computed_field
@@ -32,7 +37,7 @@ class Token(BaseModel):
         )
 
         refresh_token = create_token(
-            BaseModel({"test": "data"}),
+            BaseModel(**{"test": "data"}),
             cfg.refresh_token_secret_key,
             timedelta(minutes=cfg.refresh_token_expire_minutes),
             cfg.algorithm,
