@@ -1,9 +1,15 @@
 from datetime import UTC, datetime
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, computed_field
 
 from app.schemas.auth.user import Role
+
+
+class TokenType(Enum):
+    ACCESS = "access"
+    REFRESH = "refresh"
 
 
 class TokenData(BaseModel):
@@ -17,6 +23,7 @@ class TokenData(BaseModel):
 
 class TokenEncode(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     expires_in: int
     data: TokenData
