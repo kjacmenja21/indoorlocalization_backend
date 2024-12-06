@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from typing import Optional
 
 from pydantic import BaseModel, Field, computed_field
 
@@ -7,6 +8,7 @@ from app.functions.exceptions import forbidden, unprocessable_entity
 from app.functions.jwt import create_token, decode_token
 from app.schemas.auth.token_extra import (
     AccessTokenData,
+    RefreshTokenData,
     TokenDecode,
     TokenEncode,
     TokenType,
@@ -20,7 +22,8 @@ class Token(BaseModel):
     token_type: str = "Bearer"
     scope: list[Role] = [Role.USER]
     expires_in: int
-    data: AccessTokenData
+    access_data: AccessTokenData
+    refresh_data: Optional[RefreshTokenData] = None
     iat: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @computed_field
@@ -28,16 +31,10 @@ class Token(BaseModel):
         return self.iat + timedelta(minutes=self.expires_in)
 
     def encode(self) -> TokenEncode:
-
-        access_token = create_token(
-            self,
-            cfg.secret_key,
-            timedelta(minutes=cfg.access_token_expire_minutes),
-            cfg.algorithm,
-        )
+        access_token = self.encode_access_token()
 
         refresh_token = create_token(
-            BaseModel(**{"test": "data"}),
+            self.refresh_data,
             cfg.refresh_token_secret_key,
             timedelta(minutes=cfg.refresh_token_expire_minutes),
             cfg.algorithm,
@@ -48,8 +45,18 @@ class Token(BaseModel):
             refresh_token=refresh_token,
             expires_in=self.expires_in,
             scope=self.scope,
-            data=self.data,
+            data=self.access_data,
         )
+
+    def encode_access_token(self) -> str:
+        access_token = create_token(
+            self.access_data,
+            cfg.secret_key,
+            timedelta(minutes=cfg.access_token_expire_minutes),
+            cfg.algorithm,
+        )
+
+        return access_token
 
     @classmethod
     def decode(
