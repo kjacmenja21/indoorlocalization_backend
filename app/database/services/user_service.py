@@ -57,7 +57,7 @@ class UserService:
         return users
 
     def get_user(self, user: UserBase) -> UserModelIndentified:
-        field_values = user.model_dump(exclude_unset=True, exclude_none=True)
+        field_values = user.model_dump(include=["username", "email"])
         filters = [
             getattr(User, field) == value for field, value in field_values.items()
         ]
