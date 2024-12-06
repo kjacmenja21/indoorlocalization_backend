@@ -29,6 +29,7 @@ class TokenDecode(BaseModel):
     iat: datetime
     exp: datetime
     scope: list[Role]
+    data: TokenData
 
     @computed_field()
     def expires_in(self) -> float:

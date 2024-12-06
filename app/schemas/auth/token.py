@@ -1,6 +1,8 @@
 from datetime import UTC, datetime, timedelta
+from typing import Annotated
+from uuid import UUID
 
-from pydantic import BaseModel, Field, computed_field
+from pydantic import AfterValidator, BaseModel, Field, computed_field
 
 from app.functions.exceptions import forbidden, unprocessable_entity
 from app.functions.jwt import create_access_token, decode_access_token
@@ -9,6 +11,7 @@ from app.schemas.auth.user import Role
 
 
 class Token(BaseModel):
+    id: Annotated[UUID, AfterValidator(lambda x: x.hex)]
     token_type: str = "Bearer"
     scope: list[Role] = [Role.USER]
     expires_in: int
@@ -41,4 +44,4 @@ class Token(BaseModel):
             elif not all(i in decoded["scope"] for i in scope):
                 raise forbidden(msg="Insufficient scope.")
 
-        return TokenDecode.model_validate(decoded.data)
+        return TokenDecode(**decoded.model_dump())
