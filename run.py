@@ -3,7 +3,7 @@ import asyncio
 from hypercorn.asyncio import serve
 
 from app import app
-from app.config import ASGIConfig, HypercornConfig
+from app.config import HypercornConfig
 
 
 async def main():
