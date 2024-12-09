@@ -1,21 +1,24 @@
 from typing import Literal
 
 from hypercorn import Config
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class GeneralConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="", env_ignore_empty=True)
     log_level: Literal["INFO", "WARNING", "ERROR"] = "INFO"
-    use_multicast_dns: bool = True
     refresh_token_cookie_name: str = "refresh-token"
 
 
 class mDNSConfig(BaseSettings):
-    hostname: str = "adaptiq_indoor_localization"
+    model_config = SettingsConfigDict(env_prefix="mdns_", env_ignore_empty=True)
+    enable: bool = False
+    hostname: str = "mdns_dev"
     port: int = 8001
 
 
 class JWTConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="jwt_", env_ignore_empty=True)
     access_token_secret_key: str = "supersecretkey"
     refresh_token_secret_key: str = "refreshtokensecret"
     algorithm: str = "HS256"
