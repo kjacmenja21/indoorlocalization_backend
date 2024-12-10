@@ -15,16 +15,9 @@ class GeneralConfig(BaseSettings):
     log_level: Literal["INFO", "WARNING", "ERROR"] = "INFO"
     refresh_token_cookie_name: str = "refresh-token"
 
-
-class mDNSConfig(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="mdns_",
-        env_file=ENV_FILE,
-        env_ignore_empty=True,
-    )
-    enable: bool = False
-    hostname: str = "mdns_dev"
-    port: int = 8001
+    mdns_enable: bool = False
+    mdns_hostname: str = "mdns_dev"
+    mdns_port: int = 8001
 
 
 class JWTConfig(BaseSettings):
