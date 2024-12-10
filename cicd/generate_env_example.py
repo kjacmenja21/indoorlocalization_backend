@@ -123,7 +123,7 @@ def generate_env_example(
     :param output_dir: Directory to store the generated files.
     :param ignore: List of directories or files to ignore.
     """
-    postfix = ".example"
+    prefix = ".example"
     python_files = find_python_files(base_path, ignore)
 
     for file in python_files:
@@ -132,13 +132,13 @@ def generate_env_example(
             for env_prefix, env_file, fields in settings_data:
                 # If env_file is set, use it as the filename
                 if env_file:
-                    env_file_name = f"{env_file.replace('_', '')}{postfix}"
+                    env_file_name = f"{prefix}{env_file.replace('_', '')}"
                 else:
                     # If env_file is not set, use the env_prefix as the filename
                     env_file_name = (
-                        f".{env_prefix.replace('_', '')}{postfix}"
+                        f"{prefix}.{env_prefix.replace('_', '')}"
                         if env_prefix
-                        else f".env{postfix}"
+                        else f"{prefix}.env"
                     )
 
                 env_file_path = os.path.join(output_dir, env_file_name)
