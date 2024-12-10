@@ -44,7 +44,6 @@ def is_database_up_to_date(input_engine: Engine, alembic_cfg: Config) -> bool:
 
 
 def upgrade_database(alembic_cfg: Config) -> None:
-
     command.upgrade(alembic_cfg, "head")
 
 
