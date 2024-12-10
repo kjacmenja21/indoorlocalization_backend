@@ -103,39 +103,48 @@ def extract_basesettings_fields(
 
 
 def generate_env_example(
-    base_path: str, output_file: str = ".env.example", ignore: List[str] = None
+    base_path: str, output_dir: str = ".", ignore: List[str] = None
 ) -> None:
     """
-    Generate a .env.example file based on Pydantic BaseSettings models.
+    Generate .env.example files based on Pydantic BaseSettings models.
     :param base_path: Base directory to search.
-    :param output_file: Name of the output file.
+    :param output_dir: Directory to store the generated files.
     :param ignore: List of directories or files to ignore.
     """
     python_files = find_python_files(base_path, ignore)
-    env_vars: dict[str, str] = {}
 
     for file in python_files:
         try:
             settings_data = extract_basesettings_fields(file)
             for env_prefix, fields in settings_data:
-                env_vars[env_prefix] = "\n"
+                # If the env_prefix is empty, use .env.example as the file name
+                if not env_prefix:
+                    env_file_name = ".env.example"
+                else:
+                    # Otherwise, use the prefix and remove underscores
+                    env_file_name = f".{env_prefix.replace('_', '')}.env.example"
+
+                env_file_path = os.path.join(output_dir, env_file_name)
+
+                env_vars: Dict[str, str] = {}
+
                 for field, default in fields.items():
                     # Apply the prefix to the environment variable
                     env_var_name = f"{env_prefix}{field}"
                     env_vars[env_var_name] = default
+
+                # Write the data to the file
+                with open(env_file_path, "w", encoding="utf-8") as env_file:
+                    for var, default in env_vars.items():
+                        if default is None:
+                            default = ""
+                        env_file.write(f"{var.upper()}={default}\n")
+                print(f"Generated {env_file_path}")
+
         except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"Error processing file {file}: {e}")
-
-    with open(output_file, "w", encoding="utf-8") as file:
-        for var, default in env_vars.items():
-            if default == "\n":
-                env_name = generate_centered_string(var.replace("_", "").upper())
-                file.write(f"\n# {env_name}\n")
-                continue
-            file.write(f"{var.upper()}={default or ''}\n")
-    print(f"Generated {output_file}")
 
 
 if __name__ == "__main__":
     IGNORE_LIST = [".venv", "__pycache__"]  # Add directories or files to ignore here
-    generate_env_example(base_path=".", ignore=IGNORE_LIST)
+    generate_env_example(base_path=".", output_dir=".", ignore=IGNORE_LIST)
