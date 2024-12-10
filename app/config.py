@@ -31,10 +31,10 @@ class GeneralConfig(BaseSettings):
 
 class FastAPISettings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore")
-    app_title: str = "Indoor Localization Backend"
-    app_description: str = "# TODO write me down!"
-    app_version: str = "0.0.0"
-    app_debug: bool = False
+    title: str = "Indoor Localization Backend"
+    description: str = "# TODO write me down!"
+    version: str = "0.0.0"
+    debug: bool = False
 
     @staticmethod
     def parse_settings(config: BaseSettings, prefix: str) -> "FastAPISettings":
