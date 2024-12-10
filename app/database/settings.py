@@ -5,13 +5,18 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import make_url
 from sqlalchemy.engine.url import URL
 
+from app.config import ENV_FILE
 from app.functions.exceptions import stop_application
 
 logger = logging.getLogger(__name__)
 
 
 class DBSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="db_", env_ignore_empty=True)
+    model_config = SettingsConfigDict(
+        env_prefix="db_",
+        env_file=ENV_FILE,
+        env_ignore_empty=True,
+    )
     postgres_url: PostgresDsn = "postgresql://postgres:example@localhost:5432/postgres"
     debug: bool = False
 
