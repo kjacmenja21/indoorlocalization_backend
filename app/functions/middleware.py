@@ -4,11 +4,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.database.db import engine
-from app.functions.alembic_jobs import prepare_database
+from app.functions.alembic_jobs import create_config, prepare_database
 from app.functions.logger import setup_logger
 from app.functions.multicast_dns import MulticastDNS, init_mdns
 from app.models.common import init_orm
-from migrations.env import config
 
 
 @asynccontextmanager
@@ -19,7 +18,7 @@ async def lifespan(_: FastAPI):
     multicast_dns: MulticastDNS | None = None
 
     logging.info("Checking if database is up to date...")
-    prepare_database(engine, config)
+    prepare_database(engine, create_config())
     logging.info("Database is up to date with Alembic HEAD!")
 
     init_orm()

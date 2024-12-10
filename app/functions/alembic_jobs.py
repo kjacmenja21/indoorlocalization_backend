@@ -5,7 +5,17 @@ from alembic.config import Config
 from alembic.script import ScriptDirectory
 from sqlalchemy import CursorResult, Engine, inspect
 
-from app import config
+from app.database.settings import db_settings
+
+
+def create_config() -> Config:
+    new_config = Config
+    new_config.set_main_option(
+        new_config,
+        "sqlalchemy.url",
+        db_settings.db_dsn.render_as_string(hide_password=False),
+    )
+    return new_config
 
 
 def is_database_up_to_date(input_engine: Engine, alembic_cfg: Config) -> bool:
@@ -38,6 +48,6 @@ def upgrade_database(alembic_cfg: Config) -> None:
     command.upgrade(alembic_cfg, "head")
 
 
-def prepare_database(engine: Engine, alembic_config: Config):
-    if is_database_up_to_date(engine, config):
+def prepare_database(engine: Engine, alembic_config: Config) -> None:
+    if is_database_up_to_date(engine, alembic_config):
         upgrade_database(alembic_config)
