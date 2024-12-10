@@ -3,13 +3,11 @@ from typing import Literal
 from hypercorn import Config
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ENV_FILE = ".env"
-
 
 class GeneralConfig(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="",
-        env_file=ENV_FILE,
+        env_file="",
         env_ignore_empty=True,
     )
     log_level: Literal["INFO", "WARNING", "ERROR"] = "INFO"

@@ -56,6 +56,7 @@ def extract_basesettings_fields(
         # Look for class definitions that inherit from BaseSettings
         if isinstance(node, ast.ClassDef):
             env_prefix = ""  # Default prefix is empty
+            env_file = ""  # Default env_file is empty
             fields = {}
 
             # Check for BaseSettings inheritance
@@ -69,7 +70,7 @@ def extract_basesettings_fields(
                         body_item.targets[0], ast.Name
                     ):
                         if body_item.targets[0].id == "model_config":
-                            # Check for env_prefix inside model_config
+                            # Check for env_prefix and env_file inside model_config
                             if isinstance(body_item.value, ast.Call):
                                 for keyword in body_item.value.keywords:
                                     if keyword.arg == "env_prefix" and isinstance(
@@ -78,6 +79,13 @@ def extract_basesettings_fields(
                                         env_prefix = keyword.value.value
                                         print(
                                             f'Environment "{env_prefix}" found in class {node.name}'
+                                        )
+                                    if keyword.arg == "env_file" and isinstance(
+                                        keyword.value, ast.Constant
+                                    ):
+                                        env_file = keyword.value.value
+                                        print(
+                                            f'Env file "{env_file}" found in class {node.name}'
                                         )
 
                 # Extract fields and their default values
@@ -97,7 +105,7 @@ def extract_basesettings_fields(
                         fields[field_name] = default_value
 
                 # Add settings data for this class
-                settings_data.append((env_prefix, fields))
+                settings_data.append((env_prefix, env_file, fields))
 
     return settings_data
 
@@ -111,18 +119,23 @@ def generate_env_example(
     :param output_dir: Directory to store the generated files.
     :param ignore: List of directories or files to ignore.
     """
+    postfix = ".example"
     python_files = find_python_files(base_path, ignore)
 
     for file in python_files:
         try:
             settings_data = extract_basesettings_fields(file)
-            for env_prefix, fields in settings_data:
-                # If the env_prefix is empty, use .env.example as the file name
-                if not env_prefix:
-                    env_file_name = ".env.example"
+            for env_prefix, env_file, fields in settings_data:
+                # If env_file is set, use it as the filename
+                if env_file:
+                    env_file_name = f"{env_file.replace('_', '')}{postfix}"
                 else:
-                    # Otherwise, use the prefix and remove underscores
-                    env_file_name = f".{env_prefix.replace('_', '')}.env.example"
+                    # If env_file is not set, use the env_prefix as the filename
+                    env_file_name = (
+                        f".{env_prefix.replace('_', '')}{postfix}"
+                        if env_prefix
+                        else f".env{postfix}"
+                    )
 
                 env_file_path = os.path.join(output_dir, env_file_name)
 
