@@ -3,6 +3,18 @@ import os
 from typing import Dict, List, Optional, Tuple
 
 
+def generate_centered_string(text: str, total_length: int = 60) -> str:
+    dash_length = total_length - len(text)
+
+    if dash_length <= 0:
+        return text
+
+    left_dashes = dash_length // 2
+    right_dashes = dash_length - left_dashes
+
+    return "-" * left_dashes + text + "-" * right_dashes
+
+
 def find_python_files(base_path: str, ignore: List[str] = None) -> List[str]:
     """Recursively find all Python files in the given directory, excluding specified paths.
 
@@ -64,6 +76,9 @@ def extract_basesettings_fields(
                                         keyword.value, ast.Constant
                                     ):
                                         env_prefix = keyword.value.value
+                                        print(
+                                            f'Environment "{env_prefix}" found in class {node.name}'
+                                        )
 
                 # Extract fields and their default values
                 for body_item in node.body:
@@ -101,6 +116,7 @@ def generate_env_example(
         try:
             settings_data = extract_basesettings_fields(file)
             for env_prefix, fields in settings_data:
+                env_vars[env_prefix] = "\n"
                 for field, default in fields.items():
                     # Apply the prefix to the environment variable
                     env_var_name = f"{env_prefix}{field}"
@@ -110,6 +126,10 @@ def generate_env_example(
 
     with open(output_file, "w", encoding="utf-8") as file:
         for var, default in env_vars.items():
+            if default == "\n":
+                env_name = generate_centered_string(var.replace("_", "").upper())
+                file.write(f"\n# {env_name}\n")
+                continue
             file.write(f"{var.upper()}={default or ''}\n")
     print(f"Generated {output_file}")
 
