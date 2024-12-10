@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class DBSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="db_",
-        env_file=".db.env",
+        env_file=".env.db",
         env_ignore_empty=True,
     )
     postgres_url: PostgresDsn = "postgresql://postgres:example@localhost:5432/postgres"
@@ -22,9 +22,9 @@ class DBSettings(BaseSettings):
     driver: str = "postgresql"
     host: str = "127.0.0.1"
     port: int = 5432
-    user: str = "dev"
-    password: str = "dev_password"
-    database: str = "indoor_dev"
+    user: str = "username"
+    password: str = "password"
+    database: str = "database"
 
     pool_size: int = 5
     max_overflow: int = 0

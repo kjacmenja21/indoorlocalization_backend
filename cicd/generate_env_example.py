@@ -152,10 +152,16 @@ def generate_env_example(
 
                 # Write the data to the file
                 with open(env_file_path, "w", encoding="utf-8") as env_file:
+                    header = generate_centered_string(env_file_name.upper())
+                    env_file.write(f"# {header}\n")
+
                     for var, default in env_vars.items():
                         if default is None:
                             default = ""
                         env_file.write(f"{var.upper()}={default}\n")
+
+                    line = generate_centered_string("")
+                    env_file.write(f"# {line}\n")
                 logger.info("Generated %s", env_file_path)
 
         except Exception as e:  # pylint: disable=broad-exception-caught
