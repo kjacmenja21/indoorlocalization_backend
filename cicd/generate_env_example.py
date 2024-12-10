@@ -1,14 +1,17 @@
 import ast
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 
 def find_python_files(base_path: str, ignore: List[str] = None) -> List[str]:
-    """
-    Recursively find all Python files in the given directory, excluding specified paths.
-    :param base_path: Base directory to search.
-    :param ignore: List of directories or files to ignore.
-    :return: List of Python file paths.
+    """Recursively find all Python files in the given directory, excluding specified paths.
+
+    Args:
+        base_path (str): Base directory to search.
+        ignore (List[str], optional): List of directories or files to ignore. Defaults to None.
+
+    Returns:
+        List[str]: List of Python file paths
     """
     ignore = ignore or []
     python_files = []
@@ -25,37 +28,61 @@ def find_python_files(base_path: str, ignore: List[str] = None) -> List[str]:
     return python_files
 
 
-def extract_basesettings_fields(file_path: str) -> Dict[str, Optional[str]]:
+def extract_basesettings_fields(
+    file_path: str,
+) -> List[Tuple[str, Dict[str, Optional[str]]]]:
     """
-    Extract fields from Pydantic BaseSettings classes in a Python file.
-    Returns a dictionary where keys are field names and values are their default values or None.
+    Extract fields and config from Pydantic BaseSettings classes in a Python file.
+    Returns a list of tuples, where each tuple contains the `env_prefix` and a dictionary
+    of environment variables with their default values.
     """
-    fields = {}
-    with open(file_path, "r") as file:
+    settings_data = []
+    with open(file_path, "r", encoding="utf-8") as file:
         tree = ast.parse(file.read(), filename=file_path)
 
     for node in ast.walk(tree):
         # Look for class definitions that inherit from BaseSettings
         if isinstance(node, ast.ClassDef):
-            for base in node.bases:
-                if isinstance(base, ast.Name) and base.id == "BaseSettings":
-                    for body_item in node.body:
-                        if isinstance(body_item, ast.AnnAssign) and isinstance(
-                            body_item.target, ast.Name
-                        ):
-                            # Extract field name
-                            field_name = body_item.target.id
-                            # Extract default value if provided
-                            default_value = None
-                            if body_item.value:
-                                if isinstance(body_item.value, ast.Constant):
-                                    default_value = body_item.value.value
-                                    if isinstance(
-                                        body_item.value.value, (str, int, float, bool)
+            env_prefix = ""  # Default prefix is empty
+            fields = {}
+
+            # Check for BaseSettings inheritance
+            if any(
+                isinstance(base, ast.Name) and base.id == "BaseSettings"
+                for base in node.bases
+            ):
+                # Look for model_config attribute
+                for body_item in node.body:
+                    if isinstance(body_item, ast.Assign) and isinstance(
+                        body_item.targets[0], ast.Name
+                    ):
+                        if body_item.targets[0].id == "model_config":
+                            # Check for env_prefix inside model_config
+                            if isinstance(body_item.value, ast.Call):
+                                for keyword in body_item.value.keywords:
+                                    if keyword.arg == "env_prefix" and isinstance(
+                                        keyword.value, ast.Constant
                                     ):
-                                        default_value = str(body_item.value.value)
-                            fields[field_name] = default_value
-    return fields
+                                        env_prefix = keyword.value.value
+
+                # Extract fields and their default values
+                for body_item in node.body:
+                    if isinstance(body_item, ast.AnnAssign) and isinstance(
+                        body_item.target, ast.Name
+                    ):
+                        field_name = body_item.target.id
+                        default_value = None
+                        if isinstance(body_item.value, ast.Constant):  # For Python 3.8+
+                            if isinstance(
+                                body_item.value.value, (str, int, float, bool)
+                            ):
+                                default_value = str(body_item.value.value)
+                        fields[field_name] = default_value
+
+                # Add settings data for this class
+                settings_data.append((env_prefix, fields))
+
+    return settings_data
 
 
 def generate_env_example(
@@ -72,12 +99,16 @@ def generate_env_example(
 
     for file in python_files:
         try:
-            fields = extract_basesettings_fields(file)
-            env_vars.update(fields)
-        except Exception as e:
+            settings_data = extract_basesettings_fields(file)
+            for env_prefix, fields in settings_data:
+                for field, default in fields.items():
+                    # Apply the prefix to the environment variable
+                    env_var_name = f"{env_prefix}{field}"
+                    env_vars[env_var_name] = default
+        except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"Error processing file {file}: {e}")
 
-    with open(output_file, "w") as file:
+    with open(output_file, "w", encoding="utf-8") as file:
         for var, default in env_vars.items():
             file.write(f"{var.upper()}={default or ''}\n")
     print(f"Generated {output_file}")
