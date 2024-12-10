@@ -1,6 +1,10 @@
 import ast
+import logging
 import os
 from typing import Dict, List, Optional, Tuple
+
+logger = logging.getLogger(os.path.basename(__file__))
+logging.basicConfig(level=logging.INFO)
 
 
 def generate_centered_string(text: str, total_length: int = 60) -> str:
@@ -77,17 +81,17 @@ def extract_basesettings_fields(
                                         keyword.value, ast.Constant
                                     ):
                                         env_prefix = keyword.value.value
-                                        print(
-                                            f'Environment "{env_prefix}" found in class {node.name}'
-                                        )
+
                                     if keyword.arg == "env_file" and isinstance(
                                         keyword.value, ast.Constant
                                     ):
                                         env_file = keyword.value.value
-                                        print(
-                                            f'Env file "{env_file}" found in class {node.name}'
+                                    if env_prefix:
+                                        logger.info(
+                                            'Environment "%s" found in class %s',
+                                            env_prefix,
+                                            node.name,
                                         )
-
                 # Extract fields and their default values
                 for body_item in node.body:
                     if isinstance(body_item, ast.AnnAssign) and isinstance(
@@ -152,10 +156,10 @@ def generate_env_example(
                         if default is None:
                             default = ""
                         env_file.write(f"{var.upper()}={default}\n")
-                print(f"Generated {env_file_path}")
+                logger.info("Generated %s", env_file_path)
 
         except Exception as e:  # pylint: disable=broad-exception-caught
-            print(f"Error processing file {file}: {e}")
+            logger.info("Error processing file %s: %s", file, e)
 
 
 if __name__ == "__main__":
