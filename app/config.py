@@ -25,17 +25,28 @@ class GeneralConfig(BaseSettings):
     jwt_access_token_expire_minutes: int = 30
     jwt_refresh_token_expire_minutes: int = 60 * 24 * 7
 
+    app_title: str = "Indoor Localization Backend"
+    app_description: str = "# TODO write me down!"
+    app_version: str = "0.0.0"
+    app_debug: bool = False
+
 
 class FastAPISettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        # env_prefix="app_",
-        env_file=ENV_FILE,
-        env_ignore_empty=True,
-    )
-    title: str = "Indoor Localization Backend"
-    description: str = "# TODO write me down!"
-    version: str = "0.0.0"
-    debug: bool = False
+    model_config = SettingsConfigDict(extra="ignore")
+    app_title: str = "Indoor Localization Backend"
+    app_description: str = "# TODO write me down!"
+    app_version: str = "0.0.0"
+    app_debug: bool = False
+
+    @staticmethod
+    def parse_settings(config: BaseSettings, prefix: str) -> "FastAPISettings":
+        transformed_data = {
+            key[len(prefix) :]: value
+            for key, value in config.model_dump().items()
+            if key.startswith(prefix)
+        }
+        settings = FastAPISettings.model_validate(**transformed_data)
+        return settings
 
 
 class HypercornConfig(Config):
