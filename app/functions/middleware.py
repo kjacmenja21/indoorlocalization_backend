@@ -27,7 +27,8 @@ async def lifespan(_: FastAPI):
     logging.warning("Shutting down the application")
 
 
-async def init_mdns() -> MulticastDNS:
+async def init_mdns() -> MulticastDNS | None:
+    multicast_dns = None
     config = mDNSConfig()
     if config.enable:
         mdns_config = mDNSConfig()
