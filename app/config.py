@@ -19,23 +19,16 @@ class GeneralConfig(BaseSettings):
     mdns_hostname: str = "mdns_dev"
     mdns_port: int = 8001
 
-
-class JWTConfig(BaseSettings):
-    model_config = model_config = SettingsConfigDict(
-        env_prefix="jwt_",
-        env_file=ENV_FILE,
-        env_ignore_empty=True,
-    )
-    access_token_secret_key: str = "supersecretkey"
-    refresh_token_secret_key: str = "refreshtokensecret"
-    algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
-    refresh_token_expire_minutes: int = 60 * 24 * 7
+    jwt_access_token_secret_key: str = "supersecretkey"
+    jwt_refresh_token_secret_key: str = "refreshtokensecret"
+    jwt_algorithm: str = "HS256"
+    jwt_access_token_expire_minutes: int = 30
+    jwt_refresh_token_expire_minutes: int = 60 * 24 * 7
 
 
 class FastAPISettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="app_",
+        # env_prefix="app_",
         env_file=ENV_FILE,
         env_ignore_empty=True,
     )

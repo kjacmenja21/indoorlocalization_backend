@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, ValidationError, computed_field
 
-from app.config import JWTConfig
+from app.config import GeneralConfig
 from app.functions.exceptions import forbidden, unprocessable_entity
 from app.functions.jwt import create_token, decode_token
 from app.schemas.auth.token_extra import (
@@ -37,7 +37,7 @@ class Token(BaseModel):
         if self.refresh_data:
             refresh_token = create_token(
                 self.refresh_data,
-                JWTConfig().refresh_token_secret_key,
+                GeneralConfig().jwt_refresh_token_secret_key,
             )
         return TokenEncode(
             access_token=access_token,
@@ -48,7 +48,9 @@ class Token(BaseModel):
         )
 
     def generate_access_token(self) -> str:
-        access_token = create_token(self.data, JWTConfig().access_token_secret_key)
+        access_token = create_token(
+            self.data, GeneralConfig().jwt_access_token_secret_key
+        )
         return access_token
 
     @classmethod
