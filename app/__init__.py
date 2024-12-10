@@ -1,18 +1,15 @@
 from fastapi import FastAPI
 
 from app.api import add_api_routers
-from app.config import FastAPISettings, GeneralConfig
+from app.config import FastAPISettings
 from app.functions.middleware import lifespan
 
 
 def create_server() -> FastAPI:
-    prefix = "app_"
-    config = GeneralConfig()
-    settings = FastAPISettings.parse_settings(config, prefix)
 
-    app = FastAPI(lifespan=lifespan, **settings.model_dump())
-    add_api_routers(app)
-    return app
+    app_instance = FastAPI(lifespan=lifespan, **FastAPISettings().model_dump())
+    add_api_routers(app_instance)
+    return app_instance
 
 
 app = create_server()
