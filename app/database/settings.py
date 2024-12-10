@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class DBSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="db_",
-        env_file="db.env",
+        env_file=".db.env",
         env_ignore_empty=True,
     )
     postgres_url: PostgresDsn = "postgresql://postgres:example@localhost:5432/postgres"
