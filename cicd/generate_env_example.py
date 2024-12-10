@@ -88,10 +88,12 @@ def extract_basesettings_fields(
                         field_name = body_item.target.id
                         default_value = None
                         if isinstance(body_item.value, ast.Constant):  # For Python 3.8+
-                            if isinstance(
-                                body_item.value.value, (str, int, float, bool)
-                            ):
+                            if isinstance(body_item.value.value, (int, float)):
                                 default_value = str(body_item.value.value)
+                            if isinstance(body_item.value.value, str):
+                                default_value = f'"{body_item.value.value}"'
+                            if isinstance(body_item.value.value, bool):
+                                default_value = str(body_item.value.value).lower()
                         fields[field_name] = default_value
 
                 # Add settings data for this class
