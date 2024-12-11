@@ -33,7 +33,7 @@ jobs:
       # Step 5: Run the script to generate .env.example files
       - name: Run script to generate .env.example
         run: |
-          poetry run python cicd/generate_env_template.py # Updated path to script
+          poetry run python cicd/generate_env_example.py
 
       # Step 6: Commit and push the generated .env.example files
       - name: Commit generated .env.example files
