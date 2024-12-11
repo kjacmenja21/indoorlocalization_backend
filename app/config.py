@@ -50,10 +50,10 @@ class FastAPISettings(BaseSettings):
 
 class HypercornConfig(Config):
     app: str = "app:app"
-    host: str = "127.0.0.1"
+    host: str = "[::]"
     port: int = 8000
 
     def __init__(self) -> None:
         super().__init__()
-        self.bind = f"{self.host}:{self.port}"
+        self.bind = [f"{self.host}:{self.port}"]
         self.loglevel = "INFO"
