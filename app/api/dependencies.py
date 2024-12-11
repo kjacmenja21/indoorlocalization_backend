@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 
-from app.config import GeneralConfig, JWTConfig
+from app.config import GeneralConfig
 from app.database.db import get_db_session
 from app.database.services import UserService
 from app.functions.exceptions import credentials_exception
@@ -27,7 +27,7 @@ async def get_current_user(
     token_decoded = Token.decode_access(
         token=token,
         scope=scope,
-        key=JWTConfig().access_token_secret_key,
+        key=GeneralConfig().jwt_access_token_secret_key,
     )
 
     user = UserBase(**token_decoded.model_dump())

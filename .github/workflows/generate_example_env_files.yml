@@ -1,0 +1,48 @@
+name: Generate and Commit .env.example Files
+
+on:
+  push:
+    branches:
+      - main # Trigger on push to the 'main' branch. Adjust as needed.
+
+jobs:
+  generate-env-files:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x" # Use the Python version you need
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Assuming you have a requirements.txt for dependencies
+
+      # Step 4: Run the script to generate .env.example files
+      - name: Run script to generate .env.example
+        run: |
+          python generate_env_example.py  # Update with the correct path to your script
+
+      # Step 5: Commit and push the generated .env.example files
+      - name: Commit generated .env.example files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Add generated files to the commit
+          git add *.env.example
+
+          # Check if there are changes to commit
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update .env.example files"
+            git push
+          fi

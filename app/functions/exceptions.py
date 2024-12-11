@@ -57,3 +57,7 @@ def unprocessable_entity(msg: str = "Unprocessable entity.") -> HTTPException:
 
 def too_many_requests(msg: str = "Too many requests") -> HTTPException:
     return HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=msg)
+
+
+def stop_application(msg: str = "Shutting down due to critical startup error.") -> None:
+    raise SystemExit(msg)

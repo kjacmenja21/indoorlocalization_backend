@@ -4,6 +4,8 @@ import socket
 
 from zeroconf import ServiceInfo, Zeroconf
 
+from app.config import GeneralConfig
+
 
 class MulticastDNS:
     def __init__(self, hostname: str, port: int) -> None:
@@ -26,10 +28,23 @@ class MulticastDNS:
         )
 
     async def register_service(self) -> None:
-        logging.info(f"Registering service {self.service_info.name}")
+        logging.info("Registering service %s", self.service_info.name)
         await asyncio.to_thread(self.zeroconf.register_service, self.service_info)
 
     async def unregister_service(self) -> None:
-        logging.info(f"Unregistering service {self.service_info.name}")
+        logging.info("Unregistering service %s", self.service_info.name)
         await asyncio.to_thread(self.zeroconf.unregister_service, self.service_info)
         await asyncio.to_thread(self.zeroconf.close)
+
+
+async def init_mdns() -> MulticastDNS | None:
+    multicast_dns = None
+    general_config = GeneralConfig()
+
+    if general_config.mdns_enable:
+        multicast_dns = MulticastDNS(
+            general_config.mdns_hostname,
+            general_config.mdns_port,
+        )
+        await multicast_dns.register_service()
+    return multicast_dns
