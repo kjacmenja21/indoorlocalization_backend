@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from alembic import command
@@ -25,6 +26,7 @@ def is_database_up_to_date(input_engine: Engine, alembic_cfg: Config) -> bool:
     inspector = inspect(input_engine)
 
     if not inspector.has_table("alembic_version"):
+        logging.info("Database has no migrations!")
         return False
 
     with input_engine.begin() as connection:
@@ -33,6 +35,7 @@ def is_database_up_to_date(input_engine: Engine, alembic_cfg: Config) -> bool:
         )
         result = cursor.fetchone()
         if not result:
+            logging.info("Database has no migrations!")
             return False  # No version number found
 
         current_version = result[0]
@@ -48,5 +51,6 @@ def upgrade_database(alembic_cfg: Config) -> None:
 
 
 def prepare_database(engine: Engine, alembic_config: Config) -> None:
-    if is_database_up_to_date(engine, alembic_config):
+    if not is_database_up_to_date(engine, alembic_config):
+        logging.info("Upgrading database to HEAD")
         upgrade_database(alembic_config)
