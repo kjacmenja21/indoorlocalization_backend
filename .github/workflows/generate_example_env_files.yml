@@ -19,18 +19,23 @@ jobs:
         with:
           python-version: "3.x" # Use the Python version you need
 
-      # Step 3: Install dependencies
+      # Step 3: Install Poetry
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="$HOME/.local/bin:$PATH"
+
+      # Step 4: Install dependencies using Poetry
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt  # Assuming you have a requirements.txt for dependencies
+          poetry install --no-root
 
-      # Step 4: Run the script to generate .env.example files
+      # Step 5: Run the script to generate .env.example files
       - name: Run script to generate .env.example
         run: |
-          python generate_env_example.py  # Update with the correct path to your script
+          poetry run python cicd/generate_env_template.py # Updated path to script
 
-      # Step 5: Commit and push the generated .env.example files
+      # Step 6: Commit and push the generated .env.example files
       - name: Commit generated .env.example files
         run: |
           git config --global user.name "github-actions[bot]"
