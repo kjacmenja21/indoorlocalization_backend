@@ -11,8 +11,6 @@ from typing import Sequence, Union
 import sqlalchemy as sa
 from alembic import op
 
-from app.config import FastAPISettings
-from app.functions.jwt import get_password_hash
 from app.schemas.auth.user import Role
 
 # revision identifiers, used by Alembic.
@@ -33,4 +31,4 @@ def downgrade() -> None:
     user_role_table = sa.table("userRole", sa.column("name", sa.String))
 
     for role in Role:
-        op.execute(user_role_table.delete().where(name=role.value))
+        op.execute(user_role_table.delete().where(user_role_table.c.name == role.value))
