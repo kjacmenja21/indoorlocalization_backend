@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 import bcrypt
 from jose import JWTError, jwt
-from pydantic import BaseModel
+from pydantic import BaseModel, SecretStr
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,11 @@ def verify_password(plain_password: str, hashed_password: bytes) -> bool:
     )
 
 
-def get_password_hash(password: str, salt: Optional[bytes]) -> tuple[bytes, bytes]:
+def get_password_hash(
+    password: str | SecretStr, salt: Optional[bytes]
+) -> tuple[bytes, bytes]:
+    if isinstance(password, SecretStr):
+        password = password.get_secret_value()
     if salt is None:
         salt = generate_salt()
     return (bcrypt.hashpw(bytes(password, encoding="utf-8"), salt), salt)
