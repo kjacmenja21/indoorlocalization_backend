@@ -4,6 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
 
 from app.config import GeneralConfig
+from app.schemas.api.user import UserRoleModel
 from app.schemas.auth.user import Role
 
 
@@ -19,8 +20,13 @@ class RefreshTokenData(BaseModel):
 
 class TokenData(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    email: EmailStr
+    id: int
     username: str
+    email: EmailStr
+    first_name: str
+    first_name: str
+    contract: str
+    role: UserRoleModel
     iat: Optional[datetime] = None
     exp: Optional[datetime] = None
     scope: list[Role] = [Role.USER]
