@@ -1,8 +1,9 @@
-from sqlalchemy import and_, exists
+from sqlalchemy import exists
 from sqlalchemy.orm import Session, joinedload
 
 from app.functions.exceptions import not_found
 from app.functions.jwt import verify_password
+from app.models.common import filters_from_model
 from app.models.user import User, UserRole
 from app.schemas.api.user import (
     UserBase,
@@ -29,7 +30,7 @@ class UserService:
         if verify_password(password, user.password):
             return UserModelIndentified.model_validate(user)
 
-    def create_user(self, user: UserCreate) -> UserModel:
+    def create_user(self, user: UserCreate) -> UserModelIndentified:
         role = self.session.query(UserRole).where(UserRole.name == user.role).first()
         if not role:
             raise not_found("Role does not exist!")
@@ -44,7 +45,7 @@ class UserService:
         self.session.add(new_user)
         self.session.commit()
 
-        return user_model
+        return self.get_user(new_user)
 
     def get_all_users(self) -> list[UserModel]:
         user_query: list[User] = (
@@ -61,14 +62,10 @@ class UserService:
     def get_user(self, user: UserBase | int) -> UserModelIndentified:
         filter_query = None
         if user is UserBase:
-            field_values = user.model_dump(include=["username", "email"])
-            filters = [
-                getattr(User, field) == value for field, value in field_values.items()
-            ]
-            filter_query = and_(*filters)
+            filter_query = filters_from_model(user, User, include=["username", "email"])
 
         if isinstance(user, int):
-            filter_query = and_(User.id == user)
+            filter_query = User.id == user
 
         user = self.session.query(User).filter(filter_query).first()
 
