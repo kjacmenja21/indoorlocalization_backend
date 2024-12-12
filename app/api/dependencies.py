@@ -5,6 +5,7 @@ from fastapi import Depends, Request
 from app.config import GeneralConfig
 from app.database.db import get_db_session
 from app.database.services import UserService
+from app.database.services.floormap_service import FloormapService
 from app.functions.exceptions import credentials_exception
 from app.functions.schemes import oauth2_scheme
 from app.schemas.api.user import UserBase
@@ -16,7 +17,13 @@ def get_user_service(session=Depends(get_db_session)) -> UserService:
     return UserService(session=session)
 
 
+def get_floormap_service(session=Depends(get_db_session)) -> UserService:
+    return FloormapService(session=session)
+
+
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
+
+FloormapServiceDep = Annotated[FloormapService, Depends(get_floormap_service)]
 
 
 async def get_current_user(
