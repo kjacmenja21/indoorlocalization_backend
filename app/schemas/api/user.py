@@ -23,7 +23,7 @@ class UserBase(BaseModel):
     last_name: Optional[str] = Field(
         default=None, examples=["Bjorn", "Walk", "Endsworth"]
     )
-    contract: Optional[str] = None
+    contact: Optional[str] = None
 
 
 class UserCreate(UserBase):

@@ -20,7 +20,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50))
     first_name: Mapped[str] = mapped_column(String(50), nullable=True)
     last_name: Mapped[str] = mapped_column(String(50), nullable=True)
-    contract: Mapped[str] = mapped_column(String(20), nullable=True)
+    contact: Mapped[str] = mapped_column(String(20), nullable=True)
     password: Mapped[LargeBinary] = mapped_column(LargeBinary)
     salt: Mapped[LargeBinary] = mapped_column(LargeBinary)
     roleId: Mapped[int] = mapped_column(ForeignKey("userRole.id"))

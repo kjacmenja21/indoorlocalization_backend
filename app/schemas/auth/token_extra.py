@@ -25,7 +25,7 @@ class TokenData(BaseModel):
     email: EmailStr
     first_name: str
     first_name: str
-    contract: str
+    contact: str
     role: UserRoleModel
     iat: Optional[datetime] = None
     exp: Optional[datetime] = None
