@@ -1,5 +1,8 @@
 import logging
+from typing import Type
 
+from pydantic import BaseModel
+from sqlalchemy import ColumnElement, and_
 from sqlalchemy.orm import DeclarativeBase
 
 from app.database.db import engine
@@ -21,3 +24,18 @@ def init_orm() -> None:
         )
         raise stop_application(message) from e
     logging.info("Table creation done!")
+
+
+def filters_from_model(
+    user: BaseModel,
+    class_name: Type[Base],
+    include: list[str] | None = None,
+    exclude: list[str] | None = None,
+) -> ColumnElement[bool]:
+    field_values = user.model_dump(include=include, exclude=exclude)
+    filters = [
+        getattr(class_name, field) == value for field, value in field_values.items()
+    ]
+    filter_query = and_(*filters)
+
+    return filter_query
