@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from app.api.dependencies import get_current_user_with_scope
 from app.schemas.api.user import UserBase
-from app.schemas.auth.user import Role
+from app.schemas.auth.role_types import Role
 
 floormap_router = APIRouter(prefix="/floor-maps", tags=["Floor Maps"])
 

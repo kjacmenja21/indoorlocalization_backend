@@ -6,13 +6,13 @@ from pydantic import BaseModel, Field, ValidationError, computed_field
 from app.config import GeneralConfig
 from app.functions.exceptions import forbidden, unprocessable_entity
 from app.functions.jwt import create_token, decode_token
+from app.schemas.auth.role_types import Role
 from app.schemas.auth.token_extra import (
     RefreshTokenData,
     TokenData,
     TokenDecode,
     TokenEncode,
 )
-from app.schemas.auth.user import Role
 
 
 class Token(BaseModel):
@@ -70,7 +70,6 @@ class Token(BaseModel):
         cls, token: str, key: str, scope: list[Role] | None = None
     ) -> TokenDecode:
         decoded_dict = decode_token(token, key)
-        print(decoded_dict)
         if not decoded_dict:
             raise unprocessable_entity("Token invalid")
 

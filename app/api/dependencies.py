@@ -9,8 +9,8 @@ from app.database.services.floormap_service import FloormapService
 from app.functions.exceptions import credentials_exception
 from app.functions.schemes import oauth2_scheme
 from app.schemas.api.user import UserBase
+from app.schemas.auth.role_types import Role
 from app.schemas.auth.token import Token
-from app.schemas.auth.user import Role
 
 
 def get_user_service(session=Depends(get_db_session)) -> UserService:
