@@ -44,7 +44,7 @@ class UserService:
         self.session.add(new_user)
         self.session.commit()
 
-        return self.get_user(new_user)
+        return UserModelIndentified.model_validate(new_user)
 
     def get_all_users(self) -> list[UserModel]:
         user_query: list[User] = (
