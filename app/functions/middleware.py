@@ -2,7 +2,6 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 from app.database.db import engine
 from app.functions.alembic_jobs import create_config, prepare_database
@@ -12,7 +11,7 @@ from app.models.common import init_orm
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_: FastAPI):
     setup_logger()
     logging.info("Starting the application")
 
