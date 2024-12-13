@@ -1,7 +1,7 @@
 import json
 from typing import Any, Self
 
-from pydantic import Base64Bytes, BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 
 class FloormapBase(BaseModel):
@@ -26,3 +26,10 @@ class FloormapCreate(FloormapBase):
 class FloormapModel(FloormapBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class FloormapPagination(BaseModel):
+    current_page: int
+    total_pages: int
+    page_limit: int
+    page: list[FloormapModel]
