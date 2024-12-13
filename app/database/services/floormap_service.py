@@ -27,3 +27,13 @@ class FloormapService:
         found_floormap = self.session.query(FloorMap).filter(filter_query).first()
 
         return FloormapModel.model_validate(found_floormap)
+
+    def get_all_floormap(self) -> list[FloormapModel]:
+        floormap_query: list[FloorMap] = self.session.query(FloorMap).all()
+
+        floormaps: list[FloormapModel] = []
+        for floormap in floormap_query:
+            user_model = FloormapModel.model_validate(floormap)
+            floormaps.append(user_model)
+
+        return floormaps
