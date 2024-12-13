@@ -1,4 +1,4 @@
-from sqlalchemy import and_, exists
+from sqlalchemy import exists
 from sqlalchemy.orm import Session, joinedload
 
 from app.functions.exceptions import not_found
@@ -29,7 +29,7 @@ class UserService:
         if verify_password(password, user.password):
             return UserModelIndentified.model_validate(user)
 
-    def create_user(self, user: UserCreate) -> UserModel:
+    def create_user(self, user: UserCreate) -> UserModelIndentified:
         role = self.session.query(UserRole).where(UserRole.name == user.role).first()
         if not role:
             raise not_found("Role does not exist!")
@@ -44,7 +44,7 @@ class UserService:
         self.session.add(new_user)
         self.session.commit()
 
-        return user_model
+        return UserModelIndentified.model_validate(new_user)
 
     def get_all_users(self) -> list[UserModel]:
         user_query: list[User] = (
@@ -60,19 +60,15 @@ class UserService:
 
     def get_user(self, user: UserBase | int) -> UserModelIndentified:
         filter_query = None
-        if user is UserBase:
-            field_values = user.model_dump(include=["username", "email"])
-            filters = [
-                getattr(User, field) == value for field, value in field_values.items()
-            ]
-            filter_query = and_(*filters)
+        if isinstance(user, UserBase):
+            filter_query = (User.username == user.username) & (User.email == user.email)
 
         if isinstance(user, int):
-            filter_query = and_(User.id == user)
+            filter_query = User.id == user
 
-        user = self.session.query(User).filter(filter_query).first()
+        found_user = self.session.query(User).filter(filter_query).first()
 
-        return UserModelIndentified.model_validate(user)
+        return UserModelIndentified.model_validate(found_user)
 
     def user_from_orm(self, user: User) -> UserModel:
         user_role = UserRoleModel.model_validate(user.role) if user.role else None
