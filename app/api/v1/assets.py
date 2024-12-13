@@ -4,7 +4,12 @@ from fastapi import APIRouter, Body, Query
 from fastapi.responses import JSONResponse
 from pydantic import PositiveInt
 
-from app.api.dependencies import AssetServiceDep, get_current_user_with_scope
+from app.api.dependencies import (
+    AssetServiceDep,
+    FloormapServiceDep,
+    get_current_user_with_scope,
+)
+from app.functions.exceptions import not_found
 from app.schemas.api.asset import AssetCreate, AssetModel, AssetPagination, AssetPut
 from app.schemas.api.user import UserBase
 from app.schemas.auth.role_types import Role
@@ -50,7 +55,11 @@ def create_new_asset(
 def update_asset_information(
     asset_data: AssetPut,
     asset_service: AssetServiceDep,
+    floormap_service: FloormapServiceDep,
     _: UserBase = get_current_user_with_scope([Role.ADMIN]),
 ) -> AssetModel:
+    if not floormap_service.floormap_exists(asset_data.floormap_id):
+        raise not_found(f"Floor map with id = {asset_data.id} does not exist.")
+
     new_asset = asset_service.update_asset(asset_data)
     return new_asset

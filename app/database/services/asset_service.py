@@ -28,7 +28,7 @@ class AssetService:
 
     def update_asset(self, asset: AssetPut):
         if not self.asset_exists(asset):
-            raise not_found()
+            raise not_found(f"Asset with id={asset.id} was not found.")
 
         updated_asset = self.session.query(Asset).where(Asset.id == asset.id).first()
 
