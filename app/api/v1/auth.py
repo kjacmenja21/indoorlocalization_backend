@@ -48,7 +48,7 @@ def login(
 async def refresh_token(
     user_service: UserServiceDep,
     refresh_tkn: str = Depends(check_refresh_token_cookie),
-) -> TokenEncode:
+) -> JSONResponse:
     if not refresh_tkn:
         raise unauthorized("No refresh token")
 
@@ -64,12 +64,13 @@ async def refresh_token(
 
     data = TokenData.model_validate(user)
     data.scope = [user.role.name]
-    refresh_data = RefreshTokenData(client_id=user.id)
 
     token = Token(
         expires_in=GeneralConfig().jwt_access_token_expire_minutes,
         data=data,
         scope=data.scope,
-        refresh_data=refresh_data,
-    ).encode()
-    return token
+    )
+    access_token = token.generate_access_token()
+    return JSONResponse(
+        {"access_token": access_token, "email": user.email}, status_code=200
+    )
