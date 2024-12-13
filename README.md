@@ -14,6 +14,7 @@ The **Indoor Localization Backend** is part of a comprehensive solution designed
 Ensure you have the following installed:
 - Python 3.11
 - Poetry
+For the backend to be able to work it requires a connection to a PostgreSQL database. It also requires a few environment variables to be set for it to work.
 
 ### Installation
 1. Clone the repository:
