@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.dependencies import UserServiceDep, check_refresh_token_cookie
-from app.config import GeneralConfig, JWTConfig
+from app.config import GeneralConfig
 from app.functions.exceptions import unauthorized, unauthorized_bearer
 from app.schemas.auth.token import Token
 from app.schemas.auth.token_extra import RefreshTokenData, TokenData, TokenEncode
@@ -27,7 +27,7 @@ def login(
     refresh_data = RefreshTokenData(client_id=user.id)
 
     token = Token(
-        expires_in=JWTConfig().access_token_expire_minutes,
+        expires_in=GeneralConfig().jwt_access_token_expire_minutes,
         data=data,
         refresh_data=refresh_data,
         scope=data.scope,
@@ -53,7 +53,7 @@ async def refresh_token(
         raise unauthorized("No refresh token")
 
     decoded_token = Token.decode_refresh(
-        refresh_tkn, JWTConfig().refresh_token_secret_key
+        refresh_tkn, GeneralConfig().jwt_refresh_token_secret_key
     )
     if not decoded_token:
         raise unauthorized("Invalid refresh token")
@@ -67,7 +67,7 @@ async def refresh_token(
     data.scope = [user.role.name]
 
     token = Token(
-        expires_in=JWTConfig().access_token_expire_minutes,
+        expires_in=GeneralConfig().jwt_access_token_expire_minutes,
         data=data,
         scope=data.scope,
     )

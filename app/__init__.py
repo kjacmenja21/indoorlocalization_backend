@@ -6,9 +6,10 @@ from app.functions.middleware import lifespan
 
 
 def create_server() -> FastAPI:
-    app = FastAPI(lifespan=lifespan, **FastAPISettings().model_dump())
-    add_api_routers(app)
-    return app
+
+    app_instance = FastAPI(lifespan=lifespan, **FastAPISettings().model_dump())
+    add_api_routers(app_instance)
+    return app_instance
 
 
 app = create_server()

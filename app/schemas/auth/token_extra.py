@@ -3,14 +3,14 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
 
-from app.config import JWTConfig
+from app.config import GeneralConfig
 from app.schemas.auth.user import Role
 
 
 class RefreshTokenData(BaseModel):
     client_id: int
     iat: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    expires_in: int = JWTConfig().refresh_token_expire_minutes
+    expires_in: int = GeneralConfig().jwt_refresh_token_expire_minutes
 
     @computed_field
     def exp(self) -> datetime:
