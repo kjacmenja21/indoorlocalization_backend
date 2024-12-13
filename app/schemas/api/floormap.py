@@ -3,6 +3,8 @@ from typing import Any, Self
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
+from app.schemas.api.common import PaginationBase
+
 
 class FloormapBase(BaseModel):
     name: str
@@ -28,8 +30,5 @@ class FloormapModel(FloormapBase):
     id: int
 
 
-class FloormapPagination(BaseModel):
-    current_page: int
-    total_pages: int
-    page_limit: int
+class FloormapPagination(PaginationBase):
     page: list[FloormapModel]
