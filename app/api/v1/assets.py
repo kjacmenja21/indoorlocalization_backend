@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from pydantic import PositiveInt
 
 from app.api.dependencies import AssetServiceDep, get_current_user_with_scope
-from app.schemas.api.asset import AssetCreate, AssetPagination
+from app.schemas.api.asset import AssetCreate, AssetModel, AssetPagination, AssetPut
 from app.schemas.api.user import UserBase
 from app.schemas.auth.role_types import Role
 
@@ -14,7 +14,6 @@ asset_router = APIRouter(prefix="/assets", tags=["Asset"])
 
 @asset_router.get("/")
 def retrieve_assets(
-    active: Optional[bool],
     asset_service: AssetServiceDep,
     active: Optional[bool] = None,
     page: PositiveInt = Query(0, gt=-1),
@@ -48,4 +47,10 @@ def create_new_asset(
 
 
 @asset_router.put("/{asset_id}")
-def update_asset_information(): ...
+def update_asset_information(
+    asset_data: AssetPut,
+    asset_service: AssetServiceDep,
+    _: UserBase = get_current_user_with_scope([Role.ADMIN]),
+) -> AssetModel:
+    new_asset = asset_service.update_asset(asset_data)
+    return new_asset

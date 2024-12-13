@@ -59,7 +59,6 @@ async def refresh_token(
         raise unauthorized("Invalid refresh token")
 
     user = user_service.get_user(user=decoded_token.client_id)
-    print(user)
     if not user:
         raise unauthorized("User does not exist")
 

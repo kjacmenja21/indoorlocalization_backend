@@ -21,9 +21,10 @@ class AssetPut(AssetCreate):
 
 class AssetModel(AssetBase):
     model_config = ConfigDict(from_attributes=True)
+    id: int
     x: float
     y: float
-    lastSync: datetime
+    last_sync: datetime
 
 
 class AssetPagination(PaginationBase):
