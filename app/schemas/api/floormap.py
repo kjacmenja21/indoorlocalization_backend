@@ -1,7 +1,7 @@
 import json
 from typing import Any, Self
 
-from pydantic import Base64Bytes, BaseModel, model_validator
+from pydantic import Base64Bytes, BaseModel, ConfigDict, model_validator
 
 
 class FloormapBase(BaseModel):
@@ -24,4 +24,6 @@ class FloormapCreate(FloormapBase):
 
 
 class FloormapModel(FloormapBase):
+    model_config = ConfigDict(from_attributes=True)
+
     image: Base64Bytes
