@@ -25,5 +25,4 @@ class FloormapCreate(FloormapBase):
 
 class FloormapModel(FloormapBase):
     model_config = ConfigDict(from_attributes=True)
-
-    image: Base64Bytes
+    id: int
