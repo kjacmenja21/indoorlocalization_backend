@@ -13,4 +13,4 @@ class Asset(Base):
     y: Mapped[float] = mapped_column(Float)
     last_sync: Mapped[DateTime] = mapped_column(DateTime)
     floormap_id: Mapped[int] = mapped_column(ForeignKey("floorMap.id"))
-    active: Mapped[BIT] = mapped_column(BIT)
+    active: Mapped[bool] = mapped_column(BIT)
