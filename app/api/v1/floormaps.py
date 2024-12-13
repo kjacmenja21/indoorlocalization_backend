@@ -25,14 +25,14 @@ def create_new_floor_map(
     floormap_service: FloormapServiceDep,
     floormap_data: FloormapCreate = Body(...),
     _: UserBase = get_current_user_with_scope([Role.ADMIN]),
-):
+) -> JSONResponse:
     image = image.file.read()
     new_floormap = floormap_service.create_floormap(floormap_data, image)
 
     return JSONResponse(
         {
             "message": "Floormap successfully created.",
-            "user": new_floormap.model_dump(),
+            "floormap": new_floormap.model_dump(),
         }
     )
 

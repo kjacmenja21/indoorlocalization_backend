@@ -15,7 +15,7 @@ class FloormapService:
         self.session.add(new_floormap)
         self.session.commit()
 
-        return self.get_floormap(floormap)
+        return FloormapModel.model_validate(new_floormap)
 
     def get_floormap(self, floormap: FloormapBase | int) -> FloormapModel:
         filter_query = None
