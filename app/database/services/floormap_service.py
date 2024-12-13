@@ -1,7 +1,7 @@
 from sqlalchemy import exists
 from sqlalchemy.orm import Session
 
-from app.functions.exceptions import conflict
+from app.functions.exceptions import conflict, not_found
 from app.models.floor_map import FloorMap
 from app.schemas.api.floormap import FloormapBase, FloormapCreate, FloormapModel
 
@@ -24,6 +24,9 @@ class FloormapService:
         floormap = (
             self.session.query(FloorMap).where(FloorMap.id == floormap_id).first()
         )
+        if not floormap:
+            raise not_found()
+
         self.session.delete(floormap)
         self.session.commit()
 
