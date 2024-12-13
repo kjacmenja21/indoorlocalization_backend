@@ -13,15 +13,6 @@ from app.models.common import init_orm
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    origins = ["*"]
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
     setup_logger()
     logging.info("Starting the application")
 
