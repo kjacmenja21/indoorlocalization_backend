@@ -13,7 +13,7 @@ from alembic import op
 
 from app.config import FastAPISettings
 from app.functions.jwt import get_password_hash
-from app.schemas.auth.user import Role
+from app.schemas.auth.role_types import Role
 
 # revision identifiers, used by Alembic.
 revision: str = "97e23857f048"

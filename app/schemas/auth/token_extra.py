@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
 
 from app.config import GeneralConfig
 from app.schemas.api.user import UserRoleModel
-from app.schemas.auth.user import Role
+from app.schemas.auth.role_types import Role
 
 
 class RefreshTokenData(BaseModel):
