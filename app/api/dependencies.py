@@ -30,7 +30,7 @@ UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 
 FloormapServiceDep = Annotated[FloormapService, Depends(get_floormap_service)]
 
-AssetServiceDep = Annotated[AssetService, Depends(get_user_service)]
+AssetServiceDep = Annotated[AssetService, Depends(get_asset_service)]
 
 
 async def get_current_user(

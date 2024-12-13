@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
+from app.schemas.api.common import PaginationBase
+
 
 class AssetBase(BaseModel):
     name: str
@@ -15,3 +17,7 @@ class AssetBase(BaseModel):
 class AssetModel(AssetBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class AssetPagination(PaginationBase):
+    page: list[AssetModel]

@@ -3,7 +3,10 @@ from typing import Optional
 from fastapi import APIRouter, Query
 from pydantic import PositiveInt
 
-from app.api.dependencies import AssetServiceDep
+from app.api.dependencies import AssetServiceDep, get_current_user_with_scope
+from app.schemas.api.asset import AssetPagination
+from app.schemas.api.user import UserBase
+from app.schemas.auth.role_types import Role
 
 asset_router = APIRouter(prefix="/assets", tags=["Asset"])
 
@@ -12,8 +15,17 @@ asset_router = APIRouter(prefix="/assets", tags=["Asset"])
 def retrieve_assets(
     active: Optional[bool],
     asset_service: AssetServiceDep,
+    active: Optional[bool] = None,
     page: PositiveInt = Query(0, gt=-1),
     limit: PositiveInt = Query(1, gt=0),
-):
+    _: UserBase = get_current_user_with_scope([Role.USER]),
+) -> AssetPagination:
     assets = asset_service.get_all_assets(active, page, limit)
+
+    return AssetPagination(
+        current_page=page,
+        total_pages=0,
+        page_limit=limit,
+        page=assets,
+    )
 
