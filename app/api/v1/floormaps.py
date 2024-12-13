@@ -1,6 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Body, UploadFile
+from fastapi.responses import JSONResponse
 
-from app.api.dependencies import get_current_user_with_scope
+from app.api.dependencies import FloormapServiceDep, get_current_user_with_scope
+from app.schemas.api.floormap import FloormapCreate
 from app.schemas.api.user import UserBase
 from app.schemas.auth.role_types import Role
 
@@ -16,14 +18,25 @@ def retrieve_floor_maps(
 
 @floormap_router.post("/")
 def create_new_floor_map(
+    image: UploadFile,
+    floormap_service: FloormapServiceDep,
+    floormap_data: FloormapCreate = Body(...),
     _: UserBase = get_current_user_with_scope([Role.ADMIN]),
 ):
-    pass
+    image = image.file.read()
+    new_floormap = floormap_service.create_floormap(floormap_data, image)
+
+    return JSONResponse(
+        {
+            "message": "Floormap successfully created.",
+            "user": new_floormap.model_dump(),
+        }
+    )
 
 
-@floormap_router.delete("/{id}")
+@floormap_router.delete("/{floormap_id}")
 def delete_floor_map_by_id(
-    id: int,
+    floormap_id: int,
     _: UserBase = get_current_user_with_scope([Role.ADMIN]),
 ):
     pass
