@@ -27,7 +27,7 @@ For the backend to be able to work it requires a connection to a PostgreSQL data
    ```
 3. Install dependencies:
    ```bash
-   [Specify the installation command, e.g., npm install, pip install]
+   poetry install
    ```
 
 ### Configuration
@@ -35,17 +35,12 @@ Update the configuration file with your environment settings:
 - Database credentials
 - API keys
 - Other required parameters
+Check `.example.env*` files to see possible keys.
 
 ### Running the Application
 Start the backend server:
 ```bash
-
-```
-
-### Testing
-Run the test suite to verify the setup:
-```bash
-
+      python .\main.py
 ```
 
 ## License
