@@ -15,9 +15,12 @@ class AssetCreate(AssetBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class AssetPut(AssetCreate):
+    id: int
+
+
 class AssetModel(AssetBase):
     model_config = ConfigDict(from_attributes=True)
-    id: int
     x: float
     y: float
     lastSync: datetime
