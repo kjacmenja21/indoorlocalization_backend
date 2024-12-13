@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Body, UploadFile
+from fastapi import APIRouter, Body, Query, UploadFile
 from fastapi.responses import JSONResponse
+from pydantic import PositiveInt
 
 from app.api.dependencies import FloormapServiceDep, get_current_user_with_scope
-from app.schemas.api.floormap import FloormapCreate, FloormapModel
+from app.schemas.api.floormap import FloormapCreate, FloormapModel, FloormapPagination
 from app.schemas.api.user import UserBase
 from app.schemas.auth.role_types import Role
 
@@ -12,11 +13,19 @@ floormap_router = APIRouter(prefix="/floor-maps", tags=["Floor Maps"])
 @floormap_router.get("/")
 def retrieve_floor_maps(
     floormap_service: FloormapServiceDep,
+    page: PositiveInt = Query(gt=-1),
+    limit: PositiveInt = Query(gt=0),
     _: UserBase = get_current_user_with_scope([Role.USER]),
-) -> list[FloormapModel]:
-    floormaps = floormap_service.get_all_floormap()
+) -> FloormapPagination:
+    floormaps = floormap_service.get_all_floormap(page, limit)
+    count = floormap_service.floormap_page_count(limit)
 
-    return floormaps
+    return FloormapPagination(
+        current_page=page,
+        total_pages=count,
+        page_limit=limit,
+        page=floormaps,
+    )
 
 
 @floormap_router.post("/")

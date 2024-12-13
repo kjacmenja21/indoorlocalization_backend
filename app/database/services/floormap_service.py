@@ -1,3 +1,4 @@
+from pydantic import Field, PositiveInt
 from sqlalchemy import exists
 from sqlalchemy.orm import Session
 
@@ -41,8 +42,15 @@ class FloormapService:
 
         return FloormapModel.model_validate(found_floormap)
 
-    def get_all_floormap(self) -> list[FloormapModel]:
-        floormap_query: list[FloorMap] = self.session.query(FloorMap).all()
+    def get_all_floormap(
+        self,
+        page: PositiveInt = Field(0, gt=-1),
+        limit: PositiveInt = Field(1, gt=0),
+    ) -> list[FloormapModel]:
+        offset = page * limit
+        floormap_query: list[FloorMap] = (
+            self.session.query(FloorMap).limit(limit).offset(offset).all()
+        )
 
         floormaps: list[FloormapModel] = []
         for floormap in floormap_query:
@@ -55,3 +63,7 @@ class FloormapService:
         query = exists().where((FloorMap.name == floormap.name))
         floormap_exists = self.session.query(query).scalar()
         return bool(floormap_exists)
+
+    def floormap_page_count(self, limit: int = Field(1, gt=1)) -> int:
+        count = self.session.query(FloorMap).count()
+        return (count + limit - 1) // limit
