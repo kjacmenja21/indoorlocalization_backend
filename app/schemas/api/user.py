@@ -11,7 +11,7 @@ from pydantic import (
 )
 
 from app.functions.jwt import generate_salt, get_password_hash
-from app.schemas.auth.user import Role
+from app.schemas.auth.role_types import Role
 
 
 class UserBase(BaseModel):
