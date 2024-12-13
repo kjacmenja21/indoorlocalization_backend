@@ -10,7 +10,7 @@ def create_server() -> FastAPI:
     origins = ["*"]
     app_instance = FastAPI(lifespan=lifespan, **FastAPISettings().model_dump())
 
-    app.add_middleware(
+    app_instance.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
         allow_credentials=True,
