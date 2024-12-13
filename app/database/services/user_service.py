@@ -67,9 +67,9 @@ class UserService:
         if isinstance(user, int):
             filter_query = User.id == user
 
-        user = self.session.query(User).filter(filter_query).first()
+        found_user = self.session.query(User).filter(filter_query).first()
 
-        return UserModelIndentified.model_validate(user)
+        return UserModelIndentified.model_validate(found_user)
 
     def user_from_orm(self, user: User) -> UserModel:
         user_role = UserRoleModel.model_validate(user.role) if user.role else None
