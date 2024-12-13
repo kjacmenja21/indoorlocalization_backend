@@ -59,8 +59,13 @@ class FloormapService:
 
         return floormaps
 
-    def floormap_exists(self, floormap: FloormapBase) -> bool:
-        query = exists().where((FloorMap.name == floormap.name))
+    def floormap_exists(self, floormap: FloormapBase | int) -> bool:
+        query = exists()
+        if isinstance(floormap, FloormapBase):
+            query = query.where((FloorMap.name == floormap.name))
+        if isinstance(floormap, int):
+            query = query.where(FloorMap.id == floormap)
+
         floormap_exists = self.session.query(query).scalar()
         return bool(floormap_exists)
 
