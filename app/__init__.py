@@ -11,13 +11,13 @@ def create_server() -> FastAPI:
     app_instance = FastAPI(lifespan=lifespan, **FastAPISettings().model_dump())
 
     print("\nadd_middleware\nTODO: Update origins to not be '*' (other allow_*'s too)")
-    # app_instance.add_middleware(
-    #     CORSMiddleware,
-    #     allow_origins=origins,
-    #     allow_credentials=True,
-    #     allow_methods=["*"],
-    #     allow_headers=["*"],
-    # )
+    app_instance.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     add_api_routers(app_instance)
     return app_instance
