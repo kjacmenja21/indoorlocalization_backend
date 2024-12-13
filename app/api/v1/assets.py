@@ -1,10 +1,11 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Body, Query
+from fastapi.responses import JSONResponse
 from pydantic import PositiveInt
 
 from app.api.dependencies import AssetServiceDep, get_current_user_with_scope
-from app.schemas.api.asset import AssetPagination
+from app.schemas.api.asset import AssetCreate, AssetPagination
 from app.schemas.api.user import UserBase
 from app.schemas.auth.role_types import Role
 
@@ -29,3 +30,22 @@ def retrieve_assets(
         page=assets,
     )
 
+
+@asset_router.post("/")
+def create_new_asset(
+    asset_service: AssetServiceDep,
+    asset_data: AssetCreate = Body(),
+    _: UserBase = get_current_user_with_scope([Role.ADMIN]),
+) -> JSONResponse:
+    new_asset = asset_service.create_asset(asset_data)
+
+    return JSONResponse(
+        {
+            "message": "Floormap successfully created.",
+            "floormap": new_asset.model_dump(),
+        }
+    )
+
+
+@asset_router.put("/{asset_id}")
+def update_asset_information(): ...

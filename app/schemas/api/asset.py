@@ -9,14 +9,18 @@ class AssetBase(BaseModel):
     name: str
     active: bool
     floormap_id: int
-    x: float
-    y: float
-    lastSync: datetime
+
+
+class AssetCreate(AssetBase):
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AssetModel(AssetBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    x: float
+    y: float
+    lastSync: datetime
 
 
 class AssetPagination(PaginationBase):
