@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from app.api.dependencies import UserServiceDep, get_current_user_with_scope
 from app.functions.exceptions import unprocessable_entity
 from app.schemas.api.user import UserBase, UserCreate, UserModel
-from app.schemas.auth.user import Role
+from app.schemas.auth.role_types import Role
 
 user_router = APIRouter(prefix="/users", tags=["User"])
 
