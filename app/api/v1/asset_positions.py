@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Query
+from fastapi.responses import JSONResponse
 
 from app.api.dependencies import AssetPositionDep, get_current_user_with_scope
-from app.schemas.api.asset_position import AssetPositionModel, AssetPositionQuery
+from app.schemas.api.asset_position import (
+    AssetPositionCreate,
+    AssetPositionModel,
+    AssetPositionQuery,
+)
 from app.schemas.api.user import UserBase
 from app.schemas.auth.role_types import Role
 
@@ -19,7 +24,9 @@ def retrieve_asset_position(
 
 @asset_position_router.post("/")
 def record_new_asset_position(
+    asset_position: AssetPositionCreate,
     asset_position_service: AssetPositionDep,
     _: UserBase = get_current_user_with_scope([Role.ADMIN]),
-):
-    pass
+) -> JSONResponse:
+    asset_position_service.create_asset_position_history(asset_position)
+    return JSONResponse("Successfully created Asset Position entry.")
