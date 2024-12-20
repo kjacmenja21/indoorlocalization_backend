@@ -15,10 +15,8 @@ class AssetPositionService:
             (AssetPositionHistory.assetId == data.id)
         )
 
-        results = query.all()
-        # results = query.filter(
-        #     (AssetPositionHistory.dateTime >= data.startDate)
-        #     & (AssetPositionHistory.dateTime <= data.endDate)
-        # ).all()
-        print(results)
+        results = query.filter(
+            (AssetPositionHistory.dateTime >= data.startDate)
+            & (AssetPositionHistory.dateTime <= data.endDate)
+        ).all()
         return [AssetPositionModel.model_validate(r) for r in results]
