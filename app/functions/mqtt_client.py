@@ -61,8 +61,8 @@ class MQTTClientHandler:
         def disconnect(client: MQTTClient, _packet: Any, _exc: Any | None = None):
             logging.info(
                 "[MQTT] Disconnected from MQTT broker %s:%d",
-                client._host,
-                client._port,
+                general_config.mqtt_host,
+                general_config.mqtt_port,
             )
 
         @fast_mqtt.on_subscribe()
