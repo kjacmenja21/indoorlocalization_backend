@@ -28,9 +28,13 @@ class MQTTClientHandler:
         )
 
         @fast_mqtt.on_connect()
-        def connect(client: MQTTClient, flags: int, rc: int, properties: Any):
+        def connect(_client: MQTTClient, _flags: int, _rc: int, _properties: Any):
             fast_mqtt.client.subscribe("/test/topic")  # subscribing mqtt topic
-            logging.info("Connected to MQTT broker %s:%d", client._host, client._port)
+            logging.info(
+                "Connected to MQTT broker %s:%d",
+                general_config.mqtt_host,
+                general_config.mqtt_port,
+            )
 
         @fast_mqtt.on_message()
         async def message(
@@ -58,7 +62,7 @@ class MQTTClientHandler:
             )
 
         @fast_mqtt.on_disconnect()
-        def disconnect(client: MQTTClient, _packet: Any, _exc: Any | None = None):
+        def disconnect(_client: MQTTClient, _packet: Any, _exc: Any | None = None):
             logging.info(
                 "[MQTT] Disconnected from MQTT broker %s:%d",
                 general_config.mqtt_host,
