@@ -21,14 +21,14 @@ class MQTTClientHandler:
 
         @fast_mqtt.on_message()
         async def message(
-            client: MQTTClient, topic: str, payload: bytes, qos: int, properties: Any
+            _client: MQTTClient, topic: str, payload: bytes, qos: int, properties: Any
         ):
             print("Received message: ", topic, payload.decode(), qos, properties)
             return 0
 
         @fast_mqtt.subscribe("my/mqtt/topic/#")
         async def message_to_topic(
-            client: MQTTClient, topic: str, payload: bytes, qos: int, properties: Any
+            _client: MQTTClient, topic: str, payload: bytes, qos: int, properties: Any
         ):
             print(
                 "Received message to specific topic: ",
@@ -39,7 +39,7 @@ class MQTTClientHandler:
             )
 
         @fast_mqtt.on_disconnect()
-        def disconnect(client: MQTTClient, packet, exc=None):
+        def disconnect(_client: MQTTClient, packet, exc=None):
             print("Disconnected")
 
         @fast_mqtt.on_subscribe()
