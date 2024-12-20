@@ -27,6 +27,11 @@ class GeneralConfig(BaseSettings):
     mdns_hostname: str = "mdns_dev"
     mdns_port: int = 8001
 
+    mqtt_host: str = "host_mqtt_example"
+    mqtt_port: str = "port_mqtt_example"
+    mqtt_username: str
+    mqtt_password: str
+
     jwt_access_token_secret_key: StringCheck
     jwt_refresh_token_secret_key: StringCheck
     jwt_algorithm: str = "HS256"
