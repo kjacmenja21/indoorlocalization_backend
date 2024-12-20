@@ -50,6 +50,7 @@ class UserService:
         user = self.find_user(user)
         try:
             self.session.delete(user)
+            self.session.commit()
         except Exception:
             return False
         return True
