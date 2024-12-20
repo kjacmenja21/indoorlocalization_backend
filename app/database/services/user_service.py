@@ -1,4 +1,5 @@
 from sqlalchemy import exists
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, joinedload
 
 from app.functions.exceptions import not_found
@@ -48,9 +49,12 @@ class UserService:
 
     def delete_user(self, user: UserBase | int):
         user = self.find_user(user)
+        if not user:
+            return False
         try:
             self.session.delete(user)
-        except Exception:
+        except SQLAlchemyError:
+            self.session.rollback()
             return False
         return True
 
