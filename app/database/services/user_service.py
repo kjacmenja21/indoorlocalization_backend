@@ -53,6 +53,7 @@ class UserService:
             return False
         try:
             self.session.delete(user)
+            self.session.commit()
         except SQLAlchemyError:
             self.session.rollback()
             return False

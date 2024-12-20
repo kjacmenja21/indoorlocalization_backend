@@ -46,7 +46,7 @@ def delete_user(
     user_exists = user_service.user_exists(user_id)
 
     if not user_exists:
-        raise not_found(f'User with id "{user_id}" not found.')
+        raise not_found(f"User with id '{user_id}' not found.")
 
     user_deleted = user_service.delete_user(user_id)
     if user_deleted:
