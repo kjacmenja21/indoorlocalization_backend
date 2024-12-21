@@ -7,7 +7,7 @@ from fastapi_mqtt.config import MQTTConfig
 from fastapi_mqtt.fastmqtt import FastMQTT
 
 from app.config import GeneralConfig
-from app.schemas.mqtt.message import MQTTTopicHandler
+from app.schemas.mqtt.handler import MQTTTopicHandler
 
 
 class MQTTClientHandler:
