@@ -1,4 +1,10 @@
-from app.schemas.mqtt.message import MQTTTopicHandler
+import json
+import logging
+
+from app.database.db import get_db_session_ctx
+from app.database.services.asset_position_service import AssetPositionService
+from app.schemas.api.asset_position import AssetPositionCreate
+from app.schemas.mqtt.handler import MQTTAssetUpdateMessage, MQTTTopicHandler
 
 
 class MQTTCoordinateHandler(MQTTTopicHandler):
@@ -7,5 +13,20 @@ class MQTTCoordinateHandler(MQTTTopicHandler):
         self.topic = "/test/topic"
         self.handler = self.handle
 
-    def handle(self, topic: str, payload: bytes) -> None:
-        print(topic, payload.decode())
+    async def handle(self, _topic: str, payload: bytes) -> None:
+        try:
+            data = json.loads(payload)
+            message = MQTTAssetUpdateMessage.model_validate(data)
+
+            entry = AssetPositionCreate(
+                assetId=message.id,
+                floorMapId=message.floorMap,
+                x=message.x,
+                y=message.y,
+            )
+
+            with get_db_session_ctx() as session:
+                service = AssetPositionService(session)
+                service.create_asset_position_history(data=entry)
+        except Exception as e:
+            logging.warning("Error processing MQTT message: %s", e)
