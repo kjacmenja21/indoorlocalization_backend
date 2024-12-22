@@ -66,18 +66,6 @@ class MQTTClientHandler:
         ) -> None:
             return await self._handle_topic(topic, payload)
 
-        @mqtt.subscribe("my/mqtt/topic/#")
-        async def message_to_topic(
-            _client: MQTTClient, topic: str, payload: bytes, qos: int, properties: Any
-        ):
-            logging.info(
-                "[MQTT Subscribe] %s | %s | %s | %s",
-                topic,
-                payload.decode(),
-                qos,
-                properties,
-            )
-
         @mqtt.on_disconnect()
         def disconnect(_client: MQTTClient, _packet: Any, _exc: Any | None = None):
             logging.info(
