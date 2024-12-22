@@ -1,6 +1,9 @@
 import json
 import logging
 
+from fastapi import HTTPException
+from pydantic import ValidationError
+
 from app.database.db import get_db_session_ctx
 from app.database.services.asset_position_service import AssetPositionService
 from app.schemas.api.asset_position import AssetPositionCreate
@@ -28,5 +31,9 @@ class MQTTCoordinateHandler(MQTTTopicHandler):
             with get_db_session_ctx() as session:
                 service = AssetPositionService(session)
                 service.create_asset_position_history(data=entry)
-        except Exception as e:
-            logging.warning("Error processing MQTT message: %s", e)
+        except (ValidationError, HTTPException) as exception:
+            logging.warning(
+                "Error processing MQTT message: %s: %s",
+                exception.__class__.__name__,
+                exception,
+            )
