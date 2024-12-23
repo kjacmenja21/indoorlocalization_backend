@@ -5,7 +5,7 @@ from pydantic import AfterValidator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-def check_secret_set(value: str):
+def check_secret_set(value: str) -> str:
     if len(value) <= 0:
         raise ValueError(
             "Secret value has not been set! Consider using `openssl rand -hex <value>`"
@@ -18,7 +18,7 @@ StringCheck = Annotated[str, AfterValidator(check_secret_set)]
 
 class GeneralConfig(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="", env_file="", env_ignore_unset=False
+        env_prefix="", env_file=".env", env_ignore_unset=False
     )
     log_level: Literal["INFO", "WARNING", "ERROR"] = "INFO"
     refresh_token_cookie_name: StringCheck = "refresh-token"
@@ -26,6 +26,11 @@ class GeneralConfig(BaseSettings):
     mdns_enable: bool = False
     mdns_hostname: str = "mdns_dev"
     mdns_port: int = 8001
+
+    mqtt_host: str = "host_mqtt_example"
+    mqtt_port: int = 1883
+    mqtt_username: str
+    mqtt_password: str
 
     jwt_access_token_secret_key: StringCheck
     jwt_refresh_token_secret_key: StringCheck
