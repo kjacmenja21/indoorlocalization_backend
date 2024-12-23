@@ -11,6 +11,8 @@ jobs:
     permissions:
       contents: write # Explicitly grants write access
       pull-requests: write # Grants permission to create PRs
+    env: # Declare the environment variable explicitly
+      BRANCH_NAME: update-env-files-${{ github.run_id }} # Use GitHub's run ID for uniqueness
     steps:
       # Step 1: Check out the repository
       - name: Checkout code
@@ -38,15 +40,14 @@ jobs:
         run: |
           poetry run python cicd/generate_env_example.py # Updated path to script
 
-      # Step 6: Commit and push to a new branch, then create a pull request
+      # Step 6: Commit and push to a new branch
       - name: Commit and push changes
         run: |
-          BRANCH_NAME="update-env-files-$(date +'%Y%m%d%H%M%S')"  # Unique branch name using Bash
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           # Create a new branch
-          git checkout -b "$BRANCH_NAME"
+          git checkout -b "${{ env.BRANCH_NAME }}"
 
           # Add and commit changes
           git add .example.env*
@@ -55,14 +56,15 @@ jobs:
             exit 0
           else
             git commit -m "Update .example.env files"
-            git push origin "$BRANCH_NAME"
+            git push origin "${{ env.BRANCH_NAME }}"
           fi
 
+      # Step 7: Create Pull Request
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: $BRANCH_NAME
+          branch: ${{ env.BRANCH_NAME }} # Reference the branch name from the explicitly declared environment
           title: "Update .example.env files"
           body: |
             This pull request was automatically created to update the `.example.env` files.
