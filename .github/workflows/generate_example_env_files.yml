@@ -3,7 +3,8 @@ name: Generate and Commit .example.env Files
 on:
   push:
     branches:
-      - hotfixes # Trigger on push to the 'main' branch. Adjust as needed.
+      - main # Trigger on push to the 'main' branch. Adjust as needed.
+      - develop
 
 jobs:
   generate-env-files:
