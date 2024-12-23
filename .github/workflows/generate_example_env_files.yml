@@ -70,6 +70,11 @@ jobs:
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
+      # Step 8.1: Ensure 'automation' label exists
+      - name: Ensure 'automation' label exists
+        run: |
+          gh label create automation --description "Automated PRs" --color "00FF00" || echo "Label already exists"
+
       # Step 9: Create Pull Request using GitHub CLI
       - name: Create Pull Request
         run: |
