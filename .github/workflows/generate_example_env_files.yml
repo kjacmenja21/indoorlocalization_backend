@@ -40,7 +40,15 @@ jobs:
         run: |
           poetry run python cicd/generate_env_example.py # Updated path to script
 
-      # Step 6: Commit and push to a new branch
+      # Step 6: Debug file changes
+      - name: Debug file changes
+        run: |
+          echo "Checking for .example.env files:"
+          ls -l .example.env* || echo "No .example.env files found"
+          echo "Displaying diff:"
+          git diff || echo "No differences found"
+
+      # Step 7: Commit and push changes
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
@@ -59,28 +67,39 @@ jobs:
             git push origin "${{ env.BRANCH_NAME }}"
           fi
 
-      # Step 7: Install GitHub CLI
+      # Step 8: Debug branch existence
+      - name: Debug branch existence
+        run: |
+          echo "Listing remote branches:"
+          git branch -r
+
+      # Step 9: Install GitHub CLI
       - name: Install GitHub CLI
         run: |
           sudo apt-get update
           sudo apt-get install -y gh
 
-      # Step 8: Authenticate GitHub CLI
+      # Step 10: Authenticate with GitHub CLI
       - name: Authenticate with GitHub CLI
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
-      # Step 8.1: Ensure 'automation' label exists
+      # Step 11: Ensure 'automation' label exists
       - name: Ensure 'automation' label exists
         run: |
           gh label create automation --description "Automated PRs" --color "00FF00" || echo "Label already exists"
 
-      # Step 9: Create Pull Request using GitHub CLI
+      # Step 12: Create Pull Request using GitHub CLI
       - name: Create Pull Request
         run: |
-          gh pr create \
+          if gh pr create \
             --base main \
             --head "${{ env.BRANCH_NAME }}" \
             --title "Update .example.env files" \
             --body "This pull request was automatically created to update the \`.example.env\` files. Please review and merge as necessary." \
-            --label automation
+            --label automation; then
+            echo "Pull request created successfully."
+          else
+            echo "Failed to create pull request. No changes to commit or branch issue."
+            exit 0
+          fi
