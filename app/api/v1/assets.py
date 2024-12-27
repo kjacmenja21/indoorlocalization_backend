@@ -38,10 +38,10 @@ def retrieve_assets(
 @asset_router.post("/")
 def create_new_asset(
     asset_service: AssetServiceDep,
-    asset_data: AssetCreate = Body(),
+    data: AssetCreate = Body(),
     _: UserBase = get_current_user_with_scope([Role.ADMIN]),
 ) -> JSONResponse:
-    new_asset = asset_service.create_asset(asset_data)
+    new_asset = asset_service.create_asset(data)
 
     return JSONResponse(
         {
@@ -53,13 +53,13 @@ def create_new_asset(
 
 @asset_router.put("/{asset_id}")
 def update_asset_information(
-    asset_data: AssetPut,
+    data: AssetPut,
     asset_service: AssetServiceDep,
     floormap_service: FloormapServiceDep,
     _: UserBase = get_current_user_with_scope([Role.ADMIN]),
 ) -> AssetModel:
-    if not floormap_service.floormap_exists(asset_data.floormap_id):
-        raise not_found(f"Floor map with id = {asset_data.id} does not exist.")
+    if not floormap_service.floormap_exists(data.floormap_id):
+        raise not_found(f"Floor map with id = {data.id} does not exist.")
 
-    new_asset = asset_service.update_asset(asset_data)
+    new_asset = asset_service.update_asset(data)
     return new_asset

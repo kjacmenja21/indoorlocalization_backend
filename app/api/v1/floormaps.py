@@ -32,11 +32,11 @@ def retrieve_floor_maps(
 def create_new_floor_map(
     image: UploadFile,
     floormap_service: FloormapServiceDep,
-    floormap_data: FloormapCreate = Body(...),
+    data: FloormapCreate = Body(...),
     _: UserBase = get_current_user_with_scope([Role.ADMIN]),
 ) -> JSONResponse:
     image = image.file.read()
-    new_floormap = floormap_service.create_floormap(floormap_data, image)
+    new_floormap = floormap_service.create_floormap(data, image)
 
     return JSONResponse(
         {
