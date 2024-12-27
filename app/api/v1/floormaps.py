@@ -7,7 +7,7 @@ from app.schemas.api.floormap import FloormapCreate, FloormapModel, FloormapPagi
 from app.schemas.api.user import UserBase
 from app.schemas.auth.role_types import Role
 
-floormap_router = APIRouter(prefix="/floor-maps", tags=["Floor Maps"])
+floormap_router = APIRouter(prefix="/floor-maps", tags=["Floor Map"])
 
 
 @floormap_router.get("/")
