@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class ZoneBase(BaseModel):
@@ -11,4 +11,5 @@ class ZoneCreate(ZoneBase): ...
 
 
 class ZoneModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int

@@ -23,7 +23,9 @@ class ZoneService:
     def zone_exists(self, zone: ZoneBase | int) -> bool:
         query = exists()
         if isinstance(zone, ZoneBase):
-            query = query.where((Zone.name == zone.name))
+            query = query.where(
+                (Zone.name == zone.name) & (Zone.floorMapId == zone.floorMapId)
+            )
         if isinstance(zone, int):
             query = query.where(Zone.id == zone)
 
