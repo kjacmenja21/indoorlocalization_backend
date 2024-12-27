@@ -29,6 +29,14 @@ class ZoneService:
 
         return ZoneModel.model_validate(new_zone)
 
+    def delete_zone_by_id(self, zone_id: int) -> None:
+        zone = self.session.query(Zone).where(Zone.id == zone_id).first()
+        if not zone:
+            raise not_found()
+
+        self.session.delete(zone)
+        self.session.commit()
+
     def zone_exists(self, zone: ZoneBase | int) -> bool:
         query = exists()
         if isinstance(zone, ZoneBase):

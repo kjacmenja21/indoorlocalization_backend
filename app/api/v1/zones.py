@@ -31,3 +31,13 @@ def create_zone(
             "floormap": new_zone.model_dump(),
         }
     )
+
+
+@zone_router.delete("/{zone_id}")
+def delete_zone(
+    zone_id: int,
+    zone_service: ZoneServiceDep,
+    _: UserBase = get_current_user_with_scope([Role.ADMIN]),
+) -> JSONResponse:
+    zone_service.delete_zone_by_id(zone_id)
+    return JSONResponse({"message": f"Successfully deleted zone with id {zone_id}"})
