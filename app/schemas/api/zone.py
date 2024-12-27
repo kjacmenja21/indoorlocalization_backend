@@ -10,6 +10,6 @@ class ZoneBase(BaseModel):
 class ZoneCreate(ZoneBase): ...
 
 
-class ZoneModel(BaseModel):
+class ZoneModel(ZoneBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
