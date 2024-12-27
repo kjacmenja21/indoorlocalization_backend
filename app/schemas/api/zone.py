@@ -1,5 +1,14 @@
 from pydantic import BaseModel
 
 
-class ZoneCreate(BaseModel):
-    pass
+class ZoneBase(BaseModel):
+    name: str
+    floorMapId: int
+    color: int
+
+
+class ZoneCreate(ZoneBase): ...
+
+
+class ZoneModel(BaseModel):
+    id: int
