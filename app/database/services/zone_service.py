@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database.services.floormap_service import FloormapService
 from app.functions.exceptions import conflict, not_found
-from app.models.zone import Zone
+from app.models.zone import Zone, ZonePoint
 from app.schemas.api.zone import ZoneBase, ZoneCreate, ZoneModel
 
 
@@ -22,9 +22,14 @@ class ZoneService:
     def create_zone(self, zone: ZoneCreate) -> ZoneModel:
         if self.zone_exists(zone):
             raise conflict()
-        new_zone = Zone(**zone.model_dump())
+        new_zone = Zone(**zone.model_dump(exclude="points"))
+
+        new_points: list[ZonePoint] = []
+        for point in zone.points:
+            new_points.append(ZonePoint(**point.model_dump(), zoneId=new_zone.id))
 
         self.session.add(new_zone)
+        self.session.bulk_save_objects(new_points)
         self.session.commit()
 
         return ZoneModel.model_validate(new_zone)

@@ -28,7 +28,7 @@ def create_zone(
     return JSONResponse(
         {
             "message": "Zone successfully created.",
-            "floormap": new_zone.model_dump(),
+            "zone": new_zone.model_dump(),
         }
     )
 
