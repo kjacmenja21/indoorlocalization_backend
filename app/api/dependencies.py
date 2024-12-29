@@ -8,6 +8,7 @@ from app.database.services import UserService
 from app.database.services.asset_position_service import AssetPositionService
 from app.database.services.asset_service import AssetService
 from app.database.services.floormap_service import FloormapService
+from app.database.services.zone_position_service import ZonePositionService
 from app.database.services.zone_service import ZoneService
 from app.functions.exceptions import credentials_exception
 from app.functions.schemes import oauth2_scheme
@@ -32,6 +33,10 @@ def get_asset_position_service(session=Depends(get_db_session)) -> AssetPosition
     return AssetPositionService(session=session)
 
 
+def get_zone_position_service(session=Depends(get_db_session())) -> ZonePositionService:
+    return ZonePositionService(session=session)
+
+
 def get_zone_service(session=Depends(get_db_session)) -> ZoneService:
     return ZoneService(session=session)
 
@@ -43,6 +48,8 @@ FloormapServiceDep = Annotated[FloormapService, Depends(get_floormap_service)]
 AssetServiceDep = Annotated[AssetService, Depends(get_asset_service)]
 
 AssetPositionDep = Annotated[AssetPositionService, Depends(get_asset_position_service)]
+
+ZonePositionDep = Annotated[ZonePositionService, Depends(get_zone_position_service)]
 
 ZoneServiceDep = Annotated[ZoneService, Depends(get_zone_service)]
 
