@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
+from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.api.common import round_up_to_hour
 
@@ -14,8 +15,10 @@ class AssetZonePositionQuery(BaseModel):
 class AssetZoneHistoryBase(BaseModel):
     assetId: int
     zoneId: int
-    enterDateTime: datetime
-    exitDateTime: datetime
+    enterDateTime: datetime = round_up_to_hour(datetime.now())
+    exitDateTime: Optional[datetime] = Field(
+        example=round_up_to_hour(datetime.now() - timedelta(days=1))
+    )
 
 
 class AssetZoneHistoryCreate(AssetZoneHistoryBase): ...
