@@ -17,7 +17,22 @@ class ZoneService:
             raise not_found()
 
         zones = self.session.query(Zone).where(Zone.floorMapId == floorMapId).all()
-        return [ZoneModel.model_validate(zone) for zone in zones]
+
+        zone_models: list[ZoneModel] = []
+        for zone in zones:
+            zone_points = (
+                self.session.query(ZonePoint).where(ZonePoint.zoneId == zone.id).all()
+            )
+            if len(zone_points) < 3:
+                continue
+
+            points = [ZonePointModel.model_validate(p) for p in zone_points]
+
+            zone_models.append(
+                ZoneModel.model_validate({**zone.__dict__, "points": points})
+            )
+
+        return zone_models
 
     def create_zone(self, zone: ZoneCreate) -> ZoneModel:
         if self.zone_exists(zone):
