@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main # Trigger on push to the 'main' branch. Adjust as needed.
+      - develop
 
 jobs:
   generate-env-files:
@@ -11,6 +12,8 @@ jobs:
     permissions:
       contents: write # Explicitly grants write access
       pull-requests: write # Grants permission to create PRs
+    env: # Declare the environment variable explicitly
+      BRANCH_NAME: update-env-files-${{ github.run_id }} # Use GitHub's run ID for uniqueness
     steps:
       # Step 1: Check out the repository
       - name: Checkout code
@@ -38,15 +41,22 @@ jobs:
         run: |
           poetry run python cicd/generate_env_example.py # Updated path to script
 
-      # Step 6: Commit and push to a new branch, then create a pull request
+      # Step 6: Debug file changes
+      - name: Debug file changes
+        run: |
+          echo "Checking for .example.env files:"
+          ls -l .example.env* || echo "No .example.env files found"
+          echo "Displaying diff:"
+          git diff || echo "No differences found"
+
+      # Step 7: Commit and push changes
       - name: Commit and push changes
         run: |
-          BRANCH_NAME="update-env-files-$(date +'%Y%m%d%H%M%S')"  # Unique branch name using Bash
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           # Create a new branch
-          git checkout -b "$BRANCH_NAME"
+          git checkout -b "${{ env.BRANCH_NAME }}"
 
           # Add and commit changes
           git add .example.env*
@@ -55,17 +65,42 @@ jobs:
             exit 0
           else
             git commit -m "Update .example.env files"
-            git push origin "$BRANCH_NAME"
+            git push origin "${{ env.BRANCH_NAME }}"
           fi
 
+      # Step 8: Debug branch existence
+      - name: Debug branch existence
+        run: |
+          echo "Listing remote branches:"
+          git branch -r
+
+      # Step 9: Install GitHub CLI
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
+
+      # Step 10: Authenticate with GitHub CLI
+      - name: Authenticate with GitHub CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      # Step 11: Ensure 'automation' label exists
+      - name: Ensure 'automation' label exists
+        run: |
+          gh label create automation --description "Automated PRs" --color "00FF00" || echo "Label already exists"
+
+      # Step 12: Create Pull Request using GitHub CLI
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: $BRANCH_NAME
-          title: "Update .example.env files"
-          body: |
-            This pull request was automatically created to update the `.example.env` files.
-            Please review and merge as necessary.
-          labels: |
-            automation
+        run: |
+          if gh pr create \
+            --base main \
+            --head "${{ env.BRANCH_NAME }}" \
+            --title "Update .example.env files" \
+            --body "This pull request was automatically created to update the \`.example.env\` files. Please review and merge as necessary." \
+            --label automation; then
+            echo "Pull request created successfully."
+          else
+            echo "Failed to create pull request. No changes to commit or branch issue."
+            exit 0
+          fi
