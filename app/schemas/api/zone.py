@@ -1,3 +1,5 @@
+import random
+
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 from shapely.geometry import Polygon
 
@@ -12,18 +14,19 @@ class ZonePointCreate(ZonePointBase): ...
 
 
 class ZonePointModel(ZonePointBase):
+    model_config = ConfigDict(from_attributes=True)
     zoneId: int
 
 
 class ZoneBase(BaseModel):
     name: str = Field(examples=["Delivery Dock", "Storage", "Production Line"])
-    floorMapId: int
+    floorMapId: int = Field(examples=random.sample(range(10), 5))
     color: int
-    points: list[ZonePointCreate] = Field(..., min_length=3)
+    points: list[ZonePointBase] = Field(..., min_length=3)
 
     @classmethod
     @field_validator("points", mode="after")
-    def validate_points(cls, value: list[ZonePointCreate]) -> list[ZonePointCreate]:
+    def validate_points(cls, value: list[ZonePointBase]) -> list[ZonePointBase]:
         # Check for duplicate ordinalNumber
         ordinal_numbers = [point.ordinalNumber for point in value]
         if len(ordinal_numbers) != len(set(ordinal_numbers)):
