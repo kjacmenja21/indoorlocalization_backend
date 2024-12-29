@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main # Trigger on push to the 'main' branch. Adjust as needed.
-      - develop
 
 jobs:
   generate-env-files:
@@ -58,10 +57,12 @@ jobs:
           # Create a new branch
           git checkout -b "${{ env.BRANCH_NAME }}"
 
-          # Add and commit changes
+          # Add and commit changes related to .example.env files only
           git add .example.env*
+
+          # Check if there are any changes to commit
           if git diff --cached --quiet; then
-            echo "No changes to commit"
+            echo "No .example.env files have changed."
             exit 0
           else
             git commit -m "Update .example.env files"

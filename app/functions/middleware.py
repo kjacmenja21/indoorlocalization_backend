@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from app.database.db import engine
 from app.functions.alembic_jobs import create_config, prepare_database
 from app.functions.logger import setup_logger
+from app.functions.mqtt_client import MQTTClientHandler
+from app.functions.mqtt_handlers import MQTTCoordinateHandler
 from app.functions.multicast_dns import MulticastDNS, init_mdns
 from app.models.common import init_orm
 
@@ -23,10 +25,15 @@ async def lifespan(_: FastAPI):
 
     init_orm()
 
+    mqtt_client = MQTTClientHandler()
+    await mqtt_client.start()
+    mqtt_client.register_topic_handler(MQTTCoordinateHandler())
+
     multicast_dns = await init_mdns()
 
     yield
 
+    await mqtt_client.stop()
     if multicast_dns:
         await multicast_dns.unregister_service()
     logging.warning("Shutting down the application")
