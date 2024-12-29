@@ -14,7 +14,7 @@ class Zone(Base):
 
 class ZonePoint(Base):
     __tablename__ = "zonePoint"
-    zoneId: Mapped[int] = mapped_column(Integer, primary_key=True)
-    ordinalNumber: Mapped[int] = mapped_column(Integer)
+    zoneId: Mapped[int] = mapped_column(ForeignKey("zone.id"), primary_key=True)
+    ordinalNumber: Mapped[int] = mapped_column(Integer, primary_key=True)
     x: Mapped[float] = mapped_column(Float)
     y: Mapped[float] = mapped_column(Float)
