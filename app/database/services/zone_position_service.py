@@ -12,6 +12,8 @@ class ZonePositionService:
         self, query: AssetZonePositionQuery
     ) -> list[AssetZoneHistoryModel]:
 
+        for_asset = AssetZoneHistory.assetId == query.assetId
+
         after_start_date = (AssetZoneHistory.enterDateTime >= query.startDate) | (
             AssetZoneHistory.exitDateTime >= query.startDate
         )
@@ -22,7 +24,7 @@ class ZonePositionService:
 
         results = (
             self.session.query(AssetZoneHistory)
-            .filter(after_start_date & before_end_date)
+            .filter(for_asset & (after_start_date | before_end_date))
             .all()
         )
 
