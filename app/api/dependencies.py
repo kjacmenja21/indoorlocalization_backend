@@ -33,7 +33,7 @@ def get_asset_position_service(session=Depends(get_db_session)) -> AssetPosition
     return AssetPositionService(session=session)
 
 
-def get_zone_position_service(session=Depends(get_db_session())) -> ZonePositionService:
+def get_zone_position_service(session=Depends(get_db_session)) -> ZonePositionService:
     return ZonePositionService(session=session)
 
 
