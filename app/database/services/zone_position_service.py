@@ -1,6 +1,8 @@
-from sqlalchemy.orm import Session
+from shapely import Point, Polygon
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.history import AssetZoneHistory
+from app.models.zone import Zone
 from app.schemas.api.asset_position import AssetPositionModel
 from app.schemas.api.zone_position import (
     AssetZoneHistoryCreate,
@@ -34,6 +36,35 @@ class ZonePositionService:
         )
 
         return [AssetZoneHistoryModel.model_validate(r) for r in results]
+
+    def find_zone_containing_point(
+        self, floorMapId: int, test_point: Point
+    ) -> Zone | None:
+        """
+        Find the zone in a specific floor map that contains the given point.
+
+        :param floor_map_id: The ID of the floor map.
+        :param x: X-coordinate of the point.
+        :param y: Y-coordinate of the point.
+        :return: The Zone object that contains the point, or None if no zone matches.
+        """
+        zones = (
+            self.session.query(Zone)
+            .filter(Zone.floorMapId == floorMapId)
+            .options(joinedload(Zone.points))  # Load points to minimize queries
+            .all()
+        )
+
+        for zone in zones:
+            polygon_points = [(point.x, point.y) for point in zone.points]
+            if not polygon_points:
+                continue
+
+            polygon = Polygon(polygon_points)
+            if polygon.contains(test_point):
+                return zone
+
+        return None
 
     def create_asset_zone_position_entry(
         self, entry: AssetZoneHistoryCreate
