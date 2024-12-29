@@ -1,7 +1,12 @@
 from sqlalchemy.orm import Session
 
 from app.models.history import AssetZoneHistory
-from app.schemas.api.zone_position import AssetZoneHistoryModel, AssetZonePositionQuery
+from app.schemas.api.asset_position import AssetPositionModel
+from app.schemas.api.zone_position import (
+    AssetZoneHistoryCreate,
+    AssetZoneHistoryModel,
+    AssetZonePositionQuery,
+)
 
 
 class ZonePositionService:
@@ -29,3 +34,13 @@ class ZonePositionService:
         )
 
         return [AssetZoneHistoryModel.model_validate(r) for r in results]
+
+    def create_asset_zone_position_entry(
+        self, entry: AssetZoneHistoryCreate
+    ) -> AssetPositionModel:
+        new_entry = AssetZoneHistory(**entry.model_dump())
+
+        self.session.add(new_entry)
+        self.session.commit()
+
+        return AssetPositionModel.model_validate(new_entry)

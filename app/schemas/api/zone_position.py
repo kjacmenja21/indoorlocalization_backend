@@ -18,6 +18,9 @@ class AssetZoneHistoryBase(BaseModel):
     exitDateTime: datetime
 
 
+class AssetZoneHistoryCreate(AssetZoneHistoryBase): ...
+
+
 class AssetZoneHistoryModel(AssetZoneHistoryBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
