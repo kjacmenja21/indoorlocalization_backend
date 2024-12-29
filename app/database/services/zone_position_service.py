@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from shapely import Point, Polygon
 from sqlalchemy.orm import Session, joinedload
 
@@ -36,6 +38,29 @@ class ZonePositionService:
         )
 
         return [AssetZoneHistoryModel.model_validate(r) for r in results]
+
+    def get_current_zone(self, asset_id: int) -> AssetZoneHistory | None:
+        """
+        Get the current active zone for the given asset.
+        """
+        return (
+            self.session.query(AssetZoneHistory)
+            .filter(
+                AssetZoneHistory.assetId == asset_id,
+                AssetZoneHistory.exitDateTime == None,
+            )
+            .one_or_none()
+        )
+
+    def mark_zone_exit(self, asset_id: int):
+        """
+        Mark the current zone entry for the given asset as exited.
+        """
+        current_zone = self.get_current_zone(asset_id)
+        if current_zone:
+            current_zone.exitDateTime = datetime.now()
+            self.session.add(current_zone)
+            self.session.commit()
 
     def find_zone_containing_point(
         self, floorMapId: int, test_point: Point
