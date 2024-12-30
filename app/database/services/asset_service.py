@@ -79,12 +79,14 @@ class AssetService:
 
         return AssetModel.model_validate(found_asset)
 
-    def asset_exists(self, asset: AssetBase) -> bool:
+    def asset_exists(self, asset: AssetBase | int) -> bool:
         query = exists()
-        if hasattr(asset, "id"):
-            query = query.where((Asset.id == asset.id))
+        if isinstance(asset, int):
+            query = query.where(Asset.id == asset)
+        elif hasattr(asset, "id"):
+            query = query.where(Asset.id == asset.id)
         else:
-            query = query.where((Asset.name == asset.name))
+            query = query.where(Asset.name == asset.name)
 
         asset_exists = self.session.query(query).scalar()
         return bool(asset_exists)

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.database.db import get_db_session_ctx
 from app.database.services.asset_position_service import AssetPositionService
+from app.database.services.asset_service import AssetService
 from app.database.services.floormap_service import FloormapService
 from app.database.services.zone_position_service import ZonePositionService
 from app.functions.exceptions import not_found
@@ -65,7 +66,7 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
 
             with get_db_session_ctx() as session:
                 self._validate_floormap(session, position)
-
+                self._validate_asset(session, position)
                 self._handle_position(session, position)
 
         except (ValidationError, HTTPException) as exception:
@@ -79,9 +80,15 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
         self, session: Session, position: AssetPositionCreate
     ) -> None:
         service = FloormapService(session)
-        if service.floormap_exists(floormap=position.assetId):
+        if service.floormap_exists(floormap=position.floorMapId):
             return
-        raise not_found(f"Floormap with id {position.assetId} does not exist.")
+        raise not_found(f"Floormap with id {position.floorMapId} does not exist.")
+
+    def _validate_asset(self, session: Session, position: AssetPositionCreate) -> None:
+        service = AssetService(session)
+        if service.asset_exists(asset=position.assetId):
+            return
+        raise not_found(f"Asset with id {position.assetId} does not exist.")
 
     def _handle_position(self, session: Session, position: AssetPositionCreate) -> None:
         service = ZonePositionService(session)
