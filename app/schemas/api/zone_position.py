@@ -17,7 +17,8 @@ class AssetZoneHistoryBase(BaseModel):
     zoneId: int
     enterDateTime: datetime = round_up_to_hour(datetime.now())
     exitDateTime: Optional[datetime] = Field(
-        example=round_up_to_hour(datetime.now() - timedelta(days=1))
+        default=None,
+        example=round_up_to_hour(datetime.now() - timedelta(days=1)),
     )
 
 
