@@ -35,7 +35,7 @@ class ZoneService:
         return zone_models
 
     def create_zone(self, zone: ZoneCreate) -> ZoneModel:
-        if self.floormap_service.floormap_exists(zone.floorMapId):
+        if not self.floormap_service.floormap_exists(zone.floorMapId):
             raise not_found(f"Floor map with id {zone.floorMapId} doesn't exist.")
         if self.zone_exists(zone):
             raise conflict()
