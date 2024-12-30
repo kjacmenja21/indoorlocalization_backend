@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from shapely import Point, Polygon
@@ -83,6 +84,7 @@ class ZonePositionService:
         for zone in zones:
             polygon_points = [(point.x, point.y) for point in zone.points]
             if not polygon_points:
+                logging.warning("Zone %d has no points defined.", zone.id)
                 continue
 
             polygon = Polygon(polygon_points)

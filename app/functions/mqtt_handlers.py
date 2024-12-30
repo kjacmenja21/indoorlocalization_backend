@@ -68,7 +68,7 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
                 self._validate_floormap(session, position)
                 self._validate_asset(session, position)
                 self._handle_position(session, position)
-
+                session.commit()
         except (ValidationError, HTTPException) as exception:
             logging.warning(
                 "Error processing MQTT message: %s: %s",
@@ -92,19 +92,28 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
 
     def _handle_position(self, session: Session, position: AssetPositionCreate) -> None:
         service = ZonePositionService(session)
-
+        logging.info("Starting position handling")
         zone = service.find_zone_containing_point(
             floorMapId=position.floorMapId, test_point=Point(position.x, position.y)
         )
+        if zone:
+            logging.info("Asset in zone %s (id %d)", zone.name, zone.id)
 
         current_zone = service.get_current_zone(asset_id=position.assetId)
 
+        if current_zone:
+            logging.info("Asset currently in zone %s", current_zone.zoneId)
+
         if zone and (not current_zone or current_zone.zoneId != zone.id):
-            # The asset has entered a new zone
+            # Asset has entered a new zone
+            logging.info("Asset has entered a new zone")
             if current_zone:
                 # Mark the previous zone entry as exited
+                logging.info("Mark the previous zone entry as exited")
                 service.mark_zone_exit(asset_id=position.assetId)
-                # Create a new entry for the current zone
+
+            # Create a new entry for the current zone
+            logging.info("Create a new entry for the current zone")
             service.create_asset_zone_position_entry(
                 AssetZoneHistoryCreate(
                     assetId=position.assetId,
@@ -112,5 +121,6 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
                 )
             )
         elif not zone and current_zone:
-            # The asset has exited a zone and is no longer in any zone
+            # Asset has exited a zone
+            logging.info("Asset has exited a zone")
             service.mark_zone_exit(asset_id=position.assetId)
