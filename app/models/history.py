@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import BigInteger, DateTime, Float, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
@@ -22,4 +23,4 @@ class AssetZoneHistory(Base):
     assetId: Mapped[int] = mapped_column(ForeignKey("asset.id"))
     zoneId: Mapped[int] = mapped_column(ForeignKey("zone.id"))
     enterDateTime: Mapped[datetime] = mapped_column(DateTime)
-    exitDateTime: Mapped[datetime] = mapped_column(DateTime)
+    exitDateTime: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
