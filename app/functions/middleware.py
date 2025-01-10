@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.database.db import engine
+from app.database.db import engine_handler
 from app.functions.alembic_jobs import create_config, prepare_database
 from app.functions.logger import setup_logger
 from app.functions.mqtt_client import MQTTClientHandler
@@ -18,16 +18,15 @@ from app.models.common import init_orm
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     setup_logger()
-
     logging.info("Starting the application")
-
+    engine = engine_handler.get_engine()
     multicast_dns: MulticastDNS | None = None
 
     logging.info("Checking if database is up to date...")
     prepare_database(engine, create_config())
     logging.info("Database is up to date with Alembic HEAD!")
 
-    init_orm()
+    init_orm(engine)
 
     mqtt_client = MQTTClientHandler()
     await mqtt_client.start()

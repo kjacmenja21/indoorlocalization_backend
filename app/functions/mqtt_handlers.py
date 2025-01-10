@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from shapely import Point
 from sqlalchemy.orm import Session
 
-from app.database.db import get_db_session_ctx
+from app.database.db import engine_handler
 from app.database.services.asset_position_service import AssetPositionService
 from app.database.services.asset_service import AssetService
 from app.database.services.floormap_service import FloormapService
@@ -35,7 +35,7 @@ class MQTTCoordinateHandler(MQTTTopicHandler):
                 y=message.y,
             )
 
-            with get_db_session_ctx() as session:
+            with engine_handler.get_db_session_ctx() as session:
                 service = AssetPositionService(session)
                 service.create_asset_position_history(data=entry)
         except (ValidationError, HTTPException) as exception:
@@ -64,7 +64,7 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
                 y=message.y,
             )
 
-            with get_db_session_ctx() as session:
+            with engine_handler.get_db_session_ctx() as session:
                 self._validate_floormap(session, position)
                 self._validate_asset(session, position)
                 self._handle_position(session, position)
