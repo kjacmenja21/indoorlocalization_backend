@@ -2,7 +2,6 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 from app.database.db import engine
 from app.functions.alembic_jobs import create_config, prepare_database
@@ -17,18 +16,10 @@ from app.models.common import init_orm
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_: FastAPI):
     setup_logger()
     print("\nadd_middleware\nTODO: Update origins to not be '*' (other allow_*'s too)")
-    origins = ["*"]
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
     logging.info("Starting the application")
 
     multicast_dns: MulticastDNS | None = None
