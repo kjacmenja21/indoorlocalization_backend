@@ -32,7 +32,6 @@ class MQTTClientHandler:
                 else:
                     # If the handler is a normal function
                     handler(topic, payload)
-                return
 
     def __init__(self) -> None:
         self.config = GeneralConfig()
