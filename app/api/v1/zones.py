@@ -33,6 +33,22 @@ def create_zone(
     )
 
 
+@zone_router.put("/")
+def update_zone(
+    zone_service: ZoneServiceDep,
+    zone_update: ZoneModel = Body(...),
+    _: UserBase = get_current_user_with_scope([Role.ADMIN]),
+) -> JSONResponse:
+    # Call the update_zone function in the service
+    updated_zone = zone_service.update_zone(zone_update)
+    return JSONResponse(
+        {
+            "message": "Zone successfully updated.",
+            "zone": updated_zone.model_dump(),
+        }
+    )
+
+
 @zone_router.delete("/{zone_id}")
 def delete_zone(
     zone_id: int,
