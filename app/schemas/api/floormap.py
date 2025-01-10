@@ -56,8 +56,12 @@ class FloormapModel(FloormapBase):
     @field_validator("image_type", mode="before")
     def validate_lowercase(cls, value):
         if not isinstance(value, str):
-            raise ValueError("role must be a string")
+            raise ValueError("image_type must be a string")
         return value.lower()
+
+
+class FloormapImageModel(FloormapModel):
+    image: str
 
 
 class FloormapPagination(PaginationBase):
