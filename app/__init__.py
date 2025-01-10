@@ -29,6 +29,7 @@ def create_server(
     return app_instance
 
 
+print("\nadd_middleware\nTODO: Update origins to not be '*' (other allow_*'s too)")
 middlewares = [
     MiddlewareItem(
         middleware_class=CORSMiddleware,

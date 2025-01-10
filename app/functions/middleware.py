@@ -18,7 +18,6 @@ from app.models.common import init_orm
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     setup_logger()
-    print("\nadd_middleware\nTODO: Update origins to not be '*' (other allow_*'s too)")
 
     logging.info("Starting the application")
 
