@@ -1,9 +1,31 @@
 import json
+import mimetypes
 from typing import Any, Self
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from fastapi import HTTPException, UploadFile
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from app.schemas.api.common import PaginationBase
+
+ALLOWED_MIME_TYPES = ["image/png", "image/jpeg", "image/svg+xml"]
+ALLOWED_EXTENSIONS = [".png", ".jpg", ".jpeg", ".svg"]
+
+
+def validate_file_type(file: UploadFile):
+    mime_type, _ = mimetypes.guess_type(file.filename)
+
+    if mime_type not in ALLOWED_MIME_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid file type. Only PNG, JPEG, and SVG are allowed.",
+        )
+
+    file_extension = file.filename.split(".")[-1].lower()
+    if not any(file_extension == ext.lstrip(".") for ext in ALLOWED_EXTENSIONS):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid file extension. Only PNG, JPEG, and SVG are allowed.",
+        )
 
 
 class FloormapBase(BaseModel):
@@ -28,7 +50,19 @@ class FloormapCreate(FloormapBase):
 class FloormapModel(FloormapBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    image_type: str
+
+    @classmethod
+    @field_validator("image_type", mode="before")
+    def validate_lowercase(cls, value):
+        if not isinstance(value, str):
+            raise ValueError("image_type must be a string")
+        return value.lower()
+
+
+class FloormapImageModel(FloormapModel):
+    image: str
 
 
 class FloormapPagination(PaginationBase):
-    page: list[FloormapModel]
+    page: list[FloormapImageModel]
