@@ -27,8 +27,10 @@ class GeneralConfig(BaseSettings):
     mdns_hostname: str = "mdns_dev"
     mdns_port: int = 8001
 
-    mqtt_host: str = "host_mqtt_example"
-    mqtt_port: int = 1883
+    mqtt_internal_host: str = "host_mqtt_example"
+    mqtt_internal_port: int = 1883
+    mqtt_public_host: str
+    mqtt_public_port: int = 1883
     mqtt_username: str
     mqtt_password: str
 
