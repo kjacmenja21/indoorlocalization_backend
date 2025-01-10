@@ -3,7 +3,7 @@ import mimetypes
 from typing import Any, Self
 
 from fastapi import HTTPException, UploadFile
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from app.schemas.api.common import PaginationBase
 
