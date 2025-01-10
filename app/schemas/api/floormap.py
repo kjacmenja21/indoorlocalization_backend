@@ -65,4 +65,4 @@ class FloormapImageModel(FloormapModel):
 
 
 class FloormapPagination(PaginationBase):
-    page: list[FloormapModel]
+    page: list[FloormapImageModel]

@@ -1,5 +1,4 @@
 import base64
-import logging
 from io import BytesIO
 
 from PIL import Image
@@ -54,7 +53,7 @@ class FloormapService:
         self.session.delete(floormap)
         self.session.commit()
 
-    def get_floormap(self, floormap: FloormapBase | int) -> FloormapModel:
+    def get_floormap(self, floormap: FloormapBase | int) -> FloormapImageModel:
         filter_query = None
         if isinstance(floormap, FloormapBase):
             filter_query = FloorMap.name == floormap.name
@@ -63,22 +62,37 @@ class FloormapService:
 
         found_floormap = self.session.query(FloorMap).filter(filter_query).first()
 
-        return FloormapModel.model_validate(found_floormap)
+        image = self.bytes_to_base64(
+            found_floormap.image,
+            found_floormap.image_type,
+        )
+        floormap_dict = FloormapModel.model_validate(found_floormap).model_dump()
+        floormap_dict["image"] = image
+
+        return FloormapImageModel.model_validate(floormap_dict)
 
     def get_all_floormap(
         self,
         page: PositiveInt = Field(0, gt=-1),
         limit: PositiveInt = Field(1, gt=0),
-    ) -> list[FloormapModel]:
+    ) -> list[FloormapImageModel]:
         offset = page * limit
         floormap_query: list[FloorMap] = (
             self.session.query(FloorMap).limit(limit).offset(offset).all()
         )
 
-        floormaps: list[FloormapModel] = []
+        floormaps: list[FloormapImageModel] = []
         for floormap in floormap_query:
-            user_model = FloormapModel.model_validate(floormap)
-            floormaps.append(user_model)
+            floormap_dict = FloormapModel.model_validate(floormap).model_dump()
+
+            image = self.bytes_to_base64(
+                floormap.image,
+                floormap.image_type,
+            )
+            floormap_dict["image"] = image
+
+            floormap_model = FloormapImageModel.model_validate(floormap_dict)
+            floormaps.append(floormap_model)
 
         return floormaps
 

@@ -5,6 +5,7 @@ from pydantic import PositiveInt
 from app.api.dependencies import FloormapServiceDep, get_current_user_with_scope
 from app.schemas.api.floormap import (
     FloormapCreate,
+    FloormapImageModel,
     FloormapModel,
     FloormapPagination,
     validate_file_type,
@@ -61,7 +62,7 @@ def get_floor_map_by_id(
     floormap_id: int,
     floormap_service: FloormapServiceDep,
     _: UserBase = get_current_user_with_scope([Role.USER]),
-) -> FloormapModel:
+) -> FloormapImageModel:
     floormap = floormap_service.get_floormap(floormap_id)
     return floormap
 
