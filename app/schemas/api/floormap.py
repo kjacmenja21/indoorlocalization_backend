@@ -50,6 +50,14 @@ class FloormapCreate(FloormapBase):
 class FloormapModel(FloormapBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    image_type: str
+
+    @classmethod
+    @field_validator("image_type", mode="before")
+    def validate_lowercase(cls, value):
+        if not isinstance(value, str):
+            raise ValueError("role must be a string")
+        return value.lower()
 
 
 class FloormapPagination(PaginationBase):

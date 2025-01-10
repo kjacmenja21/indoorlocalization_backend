@@ -11,10 +11,19 @@ class FloormapService:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def create_floormap(self, floormap: FloormapCreate, image: bytes) -> FloormapModel:
+    def create_floormap(
+        self,
+        floormap: FloormapCreate,
+        image: bytes,
+        image_type: str,
+    ) -> FloormapModel:
         if self.floormap_exists(floormap):
             raise conflict()
-        new_floormap = FloorMap(**floormap.model_dump(), image=image)
+        new_floormap = FloorMap(
+            **floormap.model_dump(),
+            image=image,
+            image_type=image_type,
+        )
 
         self.session.add(new_floormap)
         self.session.commit()
