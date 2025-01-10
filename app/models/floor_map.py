@@ -10,6 +10,7 @@ class FloorMap(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(80))
     image: Mapped[bytes] = mapped_column(BYTEA)
+    image_type: Mapped[str] = mapped_column(String(10), default="PNG")
     tx: Mapped[float] = mapped_column(Float)
     ty: Mapped[float] = mapped_column(Float)
     tw: Mapped[float] = mapped_column(Float)
