@@ -2,7 +2,7 @@ import random
 from datetime import datetime, timedelta
 
 import pytest
-from shapely.geometry import Point
+from shapely.geometry import Point, Polygon
 from sqlalchemy.orm import Session
 
 from app.database.services.zone_position_service import ZonePositionService
@@ -42,8 +42,10 @@ def run_before_and_after_tests(mock_session: Session):
     mock_session.commit()
 
     zones: list[Zone] = []
-    for _ in range(3):
-        zone_model = get_zone("Seeded Zone", floormap)[1]
+    for i in range(3):
+        zone_model = get_zone(
+            "Seeded Zone", floormap, center=Point(i * 1000, i * 1000)
+        )[1]
         zone = Zone(**zone_model.model_dump(exclude=["points"]))
         zone.points = []
         for point in zone_model.points:
@@ -61,9 +63,8 @@ def run_before_and_after_tests(mock_session: Session):
         for _ in range(20):
             zone = random.choice(zones)
             date = datetime(2023, 6, 1) + timedelta(days=random.randint(0, 10))
-            exit_date = random.choice(
-                [None, date + timedelta(days=random.randint(0, 2))]
-            )
+            exit_date = date + timedelta(days=random.randint(0, 2))
+
             histories.append(
                 AssetZoneHistory(
                     assetId=asset.id,
@@ -77,7 +78,7 @@ def run_before_and_after_tests(mock_session: Session):
     yield  # this is where the testing happens
 
     # Teardown : fill with any logic you want
-    mock_session.query(FloorMap, Asset, Zone, AssetZoneHistory).delete()
+    mock_session.query(FloorMap, Asset, Zone, AssetZoneHistory, ZonePoint).delete()
     mock_session.commit()
 
 
@@ -111,37 +112,64 @@ def test_get_asset_zone_position_history(
 def test_get_current_zone(
     zone_position_service: ZonePositionService, mock_session: Session
 ):
-    mock_session.query(Zone).delete()
-    mock_session.commit()
-
-    zone_model = get_zone("Test Zone", mock_session.query(FloorMap).first())[1]
-    zone = Zone(**zone_model.model_dump(exclude=["points"]))
-
-    points = []
-    for point in zone_model.points:
-        points.append(ZonePoint())
-    mock_session.add(zone)
-    mock_session.commit()
-
     asset = mock_session.query(Asset).first()
-    entry = AssetZoneHistoryCreate(
-        assetId=asset.id,
-        zoneId=zone.id,
-        enterDateTime=datetime(2023, 6, 1),
-        exitDateTime=None,
+    zone = mock_session.query(Zone).first()
+
+    mock_session.add(
+        AssetZoneHistory(
+            assetId=asset.id,
+            zoneId=zone.id,
+            enterDateTime=datetime(2023, 6, 19),
+            exitDateTime=None,
+        )
     )
-    zone_position_service.create_asset_zone_position_entry(entry)
+    mock_session.commit()
     result = zone_position_service.get_current_zone(asset.id)
 
-    assert True
+    expected = {
+        "exit_date_is_none": True,
+        "asset_id_is_correct": asset.id,
+        "zone_id_is_correct": zone.id,
+    }
+
+    actual = {
+        "exit_date_is_none": result.exitDateTime is None,
+        "asset_id_is_correct": result.assetId,
+        "zone_id_is_correct": result.zoneId,
+    }
+    assert expected == actual
 
 
 def test_mark_zone_exit(
     zone_position_service: ZonePositionService, mock_session: Session
 ):
-
     asset = mock_session.query(Asset).first()
+    zone = mock_session.query(Zone).first()
+    mock_session.query(AssetZoneHistory).where(
+        AssetZoneHistory.exitDateTime == None
+    ).delete()
+    mock_session.commit()
+    history = AssetZoneHistory(
+        assetId=asset.id,
+        zoneId=zone.id,
+        enterDateTime=datetime(2023, 6, 19),
+        exitDateTime=None,
+    )
+    mock_session.add(history)
+    mock_session.commit()
     zone_position_service.mark_zone_exit(asset.id)
+
+    current_zone = zone_position_service.get_current_zone(asset.id)
+    expected = {
+        "current_zone_is_none": None,
+        "history_is_updated": True,
+    }
+
+    actual = {
+        "current_zone_is_none": current_zone,
+        "history_is_updated": history.exitDateTime is not None,
+    }
+    assert expected == actual
 
 
 def test_find_zone_containing_point(
@@ -149,10 +177,21 @@ def test_find_zone_containing_point(
 ):
     floormap = mock_session.query(FloorMap).first()
     zone = mock_session.query(Zone).first()
-    test_point = Point(zone.points[0].x, zone.points[0].y)
-    result = zone_position_service.find_zone_containing_point(floormap.id, test_point)
+    zone_points = zone.points
+    polygon = Polygon([(point.x, point.y) for point in zone_points])
 
-    assert False
+    min_x = min(point.x for point in zone_points)
+    max_x = max(point.x for point in zone_points)
+    min_y = min(point.y for point in zone_points)
+    max_y = max(point.y for point in zone_points)
+
+    test_point = Point(random.uniform(min_x, max_x), random.uniform(min_y, max_y))
+    while not polygon.contains(test_point):
+        test_point = Point(random.uniform(min_x, max_x), random.uniform(min_y, max_y))
+
+    zone = zone_position_service.find_zone_containing_point(floormap.id, test_point)
+
+    assert zone is not None
 
 
 def test_create_asset_zone_position_entry(
