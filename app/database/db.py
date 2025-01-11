@@ -1,7 +1,8 @@
 import logging
 from contextlib import contextmanager
-from typing import Any, Generator
+from typing import Any, Generator, Optional
 
+from pydantic import BaseModel
 from sqlalchemy import URL, Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -10,21 +11,21 @@ from app.database.settings import db_settings as settings
 logger = logging.getLogger(__name__)
 
 
+class DBParams(BaseModel):
+    pool_size: Optional[int] = None
+    max_overflow: Optional[int] = None
+    echo: Optional[bool] = None
+    pool_pre_ping: Optional[bool] = None
+
+
 class DBEngineHandler:
-    def __init__(
-        self,
-        url: str | URL,
-        pool_size: int,
-        max_overflow: int,
-        echo: bool,
-        pool_pre_ping: bool,
-    ) -> None:
+    def __init__(self, url: str | URL, **kwargs) -> None:
+
+        params = DBParams(**kwargs)
+
         self.engine = create_engine(
             url=url,
-            pool_size=pool_size,
-            max_overflow=max_overflow,
-            echo=echo,
-            pool_pre_ping=pool_pre_ping,
+            **params.model_dump(exclude_none=True),
         )
 
     def get_engine(self) -> Engine:
