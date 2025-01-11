@@ -16,8 +16,8 @@ required_env_vars = {
 
 # Copy .example.env to .env if .env does not exist
 if not os.path.exists(".env"):
-    with open(".example.env", "r") as example_file:
-        with open(".env", "w") as env_file:
+    with open(".example.env", "r", encoding="utf-8") as example_file:
+        with open(".env", "w", encoding="utf-8") as env_file:
             env_file.write(example_file.read())
 
 print("HERE")
