@@ -24,6 +24,7 @@ bcrypt = "^4.2.1"
 pydantic = {extras = ["email"], version = "^2.10.3"}
 shapely = "^2.0.6"
 pillow = "^11.1.0"
+pytest-cov = "^6.0.0"
 
 
 [build-system]
