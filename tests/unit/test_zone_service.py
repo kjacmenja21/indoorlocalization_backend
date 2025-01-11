@@ -15,7 +15,7 @@ def zone_service(mock_session: Session) -> ZoneService:
 
 
 @pytest.fixture(autouse=True)
-def cleanup_zones(mock_session: Session):
+def run_before_and_after_tests(mock_session: Session):
     """Fixture to execute asserts before and after a test is run"""
     # Setup: fill with any logic you want
     floormaps = []
