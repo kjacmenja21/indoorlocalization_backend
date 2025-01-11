@@ -44,14 +44,20 @@ class ZonePositionService:
         """
         Get the current active zone for the given asset.
         """
-        return (
+        active_zones = (
             self.session.query(AssetZoneHistory)
             .filter(
                 AssetZoneHistory.assetId == asset_id,
                 AssetZoneHistory.exitDateTime == None,
             )
-            .one_or_none()
+            .all()
         )
+
+        if len(active_zones) > 1:
+            logging.error("Multiple active zones found for asset %d", asset_id)
+            raise Exception("Multiple active zones found for asset")
+
+        return active_zones[0] if active_zones else None
 
     def mark_zone_exit(self, asset_id: int):
         """
@@ -95,10 +101,10 @@ class ZonePositionService:
 
     def create_asset_zone_position_entry(
         self, entry: AssetZoneHistoryCreate
-    ) -> AssetPositionModel:
+    ) -> AssetZoneHistoryModel:
         new_entry = AssetZoneHistory(**entry.model_dump())
 
         self.session.add(new_entry)
         self.session.commit()
 
-        return AssetPositionModel.model_validate(new_entry)
+        return AssetZoneHistoryModel.model_validate(new_entry)
