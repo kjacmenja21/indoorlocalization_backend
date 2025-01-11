@@ -28,18 +28,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
           poetry install
-          - name: Run tests
-            run: |
-              poetry run pytest --cov=./ --cov-report=xml --html=report.html --self-contained-html
 
-          - name: Upload coverage report
-            uses: actions/upload-artifact@v3
-            with:
-              name: coverage-report
-              path: coverage.xml
+      - name: Run tests
+        run: |
+          poetry run pytest --cov=./ --cov-report=xml --html=report.html --self-contained-html
 
-          - name: Upload HTML report
-            uses: actions/upload-artifact@v3
-            with:
-              name: html-report
-              path: report.html
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v3
+        with:
+          name: html-report
+          path: report.html
