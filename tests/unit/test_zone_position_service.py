@@ -34,6 +34,7 @@ def run_before_and_after_tests(mock_session: Session):
     create_floormaps(floormaps, 1)
     mock_session.add_all(floormaps)
     mock_session.commit()
+    floormap = floormaps[0]
 
     assets: list[Asset] = []
     create_assets(mock_session, assets, 10)
