@@ -8,7 +8,7 @@ from app.database.services.asset_service import AssetService
 from app.models.asset import Asset
 from app.models.floor_map import FloorMap
 from app.schemas.api.asset import AssetCreate, AssetModel, AssetPut
-from tests.unit.util import get_asset, get_floormap
+from tests.unit.util import create_assets, create_floormaps, get_asset
 
 
 @pytest.fixture
@@ -22,21 +22,12 @@ def run_before_and_after_tests(mock_session: Session):
     # Setup: fill with any logic you want
 
     floormaps = []
-    for _ in range(10):
-        floormaps.append(get_floormap("Test FloorMap"))
+    create_floormaps(floormaps, 10)
     mock_session.add_all(floormaps)
     mock_session.commit()
 
     assets = []
-    for _ in range(10):
-        floormap = mock_session.query(FloorMap).first()
-        asset_data = get_asset(floormap)
-        assets.append(
-            Asset(
-                **asset_data.model_dump(),
-                **{"x": 0, "y": 0, "last_sync": datetime.now()}
-            )
-        )
+    create_assets(mock_session, assets, 10)
     mock_session.add_all(assets)
     mock_session.commit()
     yield  # this is where the testing happens
