@@ -3,7 +3,7 @@ from io import BytesIO
 
 from PIL import Image
 from pydantic import Field, PositiveInt
-from sqlalchemy import Exists, exists
+from sqlalchemy import Exists
 from sqlalchemy.orm import Session
 
 from app.functions.exceptions import conflict, not_found
