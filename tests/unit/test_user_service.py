@@ -7,11 +7,25 @@ from app.database.services.user_service import UserService
 from app.models.user import User, UserRole
 from app.schemas.api.user import UserBase, UserCreate, UserModelIndentified
 from app.schemas.auth.role_types import Role
+from tests.unit.util import create_user_roles, create_users
 
 
 @pytest.fixture
 def user_service(mock_session: Session) -> UserService:
     return UserService(session=mock_session)
+
+
+@pytest.fixture(autouse=True)
+def cleanup_zones(mock_session: Session):
+    """Fixture to execute asserts before and after a test is run"""
+    # Setup: fill with any logic you want
+    create_user_roles(mock_session)
+    create_users(mock_session)
+    yield  # this is where the testing happens
+
+    # Teardown : fill with any logic you want
+    mock_session.query(User).delete()
+    mock_session.query(UserRole).delete()
 
 
 def test_authenticate_user(user_service: UserService, mock_session: Session):

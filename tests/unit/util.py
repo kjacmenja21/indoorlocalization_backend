@@ -120,6 +120,9 @@ def get_zone(floormap: FloorMap) -> tuple[int, ZoneCreate]:
     ]
     color = int("0x0000FF", 16)
     zone_create = ZoneCreate(
-        name="New Zone", floorMapId=floormap.id, color=color, points=points
+        name="New Zone" + uuid.uuid4().hex,
+        floorMapId=floormap.id,
+        color=color,
+        points=points,
     )
     return color, zone_create
