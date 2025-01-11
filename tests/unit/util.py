@@ -100,12 +100,12 @@ def get_asset(floormap: FloorMap) -> AssetCreate:
     )
 
 
-def get_zone(floormap: FloorMap) -> tuple[int, ZoneCreate]:
+def get_zone(name: str, floormap: FloorMap) -> tuple[int, ZoneCreate]:
     points = [
         ZonePointBase(
             ordinalNumber=0,
-            x=randint(0, 50),
-            y=randint(0, 50),
+            x=randint(0, 0),
+            y=randint(0, 0),
         ),
         ZonePointBase(
             ordinalNumber=1,
@@ -120,7 +120,7 @@ def get_zone(floormap: FloorMap) -> tuple[int, ZoneCreate]:
     ]
     color = int("0x0000FF", 16)
     zone_create = ZoneCreate(
-        name="New Zone" + uuid.uuid4().hex,
+        name=name + uuid.uuid4().hex,
         floorMapId=floormap.id,
         color=color,
         points=points,
