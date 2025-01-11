@@ -1,12 +1,11 @@
-from functools import lru_cache
-
 import pytest
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.services.floormap_service import FloormapService
 from app.models.floor_map import FloorMap
-from app.schemas.api.floormap import FloormapBase, FloormapCreate, FloormapModel
+from app.schemas.api.floormap import FloormapCreate, FloormapModel
+from tests.unit.util import get_floormap, get_test_image
 
 
 @pytest.fixture
@@ -23,27 +22,6 @@ def run_before_and_after_tests(mock_session: Session):
 
     # Teardown : fill with any logic you want
     mock_session.query(FloorMap).delete()
-
-
-@lru_cache(maxsize=32)
-def get_test_image() -> bytes:
-    with open("tests/unit/misc_files/floormap_example.png", "rb") as image_file:
-        image_data = image_file.read()
-    return image_data
-
-
-def get_floormap(name: str):
-    return FloorMap(
-        name=name,
-        image=get_test_image(),
-        image_type="png",
-        width=100.0,
-        height=100.0,
-        tx=10.0,
-        ty=10.0,
-        tw=50.0,
-        th=50.0,
-    )
 
 
 def test_create_floormap(floormap_service: FloormapService, mock_session: Session):
