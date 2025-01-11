@@ -1,6 +1,8 @@
+import uuid
 from functools import lru_cache
 
 from app.models.floor_map import FloorMap
+from app.schemas.api.asset import AssetCreate
 
 
 @lru_cache(maxsize=32)
@@ -21,4 +23,10 @@ def get_floormap(name: str):
         ty=10.0,
         tw=50.0,
         th=50.0,
+    )
+
+
+def get_asset(floormap: FloorMap) -> AssetCreate:
+    return AssetCreate(
+        name="Test Asset" + uuid.uuid4().hex, active=True, floormap_id=floormap.id
     )

@@ -109,13 +109,12 @@ def mock_session():
     # Setup SQLite in-memory database
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    SessionMaker = sessionmaker(bind=engine)
+    session = SessionMaker()
 
     create_user_roles(session)
     create_users(session)
     create_floormaps(session)
-
     yield session
 
     # Teardown mock database connection
