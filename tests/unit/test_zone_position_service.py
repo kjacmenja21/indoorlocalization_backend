@@ -11,7 +11,13 @@ from app.models.floor_map import FloorMap
 from app.models.history import AssetZoneHistory
 from app.models.zone import Zone, ZonePoint
 from app.schemas.api.zone_position import AssetZoneHistoryCreate, AssetZonePositionQuery
-from tests.unit.util import create_assets, get_asset, get_floormap, get_zone
+from tests.unit.util import (
+    create_assets,
+    create_floormaps,
+    get_asset,
+    get_floormap,
+    get_zone,
+)
 
 
 @pytest.fixture
@@ -24,8 +30,9 @@ def run_before_and_after_tests(mock_session: Session):
     """Fixture to execute asserts before and after a test is run"""
     # Setup: fill with any logic you want
 
-    floormap = get_floormap("Test FloorMap")
-    mock_session.add(floormap)
+    floormaps = []
+    create_floormaps(floormaps, 1)
+    mock_session.add_all(floormaps)
     mock_session.commit()
 
     assets: list[Asset] = []

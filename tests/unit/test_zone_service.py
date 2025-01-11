@@ -6,7 +6,7 @@ from app.database.services.zone_service import ZoneService
 from app.models.floor_map import FloorMap
 from app.models.zone import Zone
 from app.schemas.api.zone import ZoneModel
-from tests.unit.util import get_floormap, get_zone
+from tests.unit.util import create_floormaps, get_floormap, get_zone
 
 
 @pytest.fixture
@@ -19,8 +19,7 @@ def run_before_and_after_tests(mock_session: Session):
     """Fixture to execute asserts before and after a test is run"""
     # Setup: fill with any logic you want
     floormaps = []
-    for _ in range(10):
-        floormaps.append(get_floormap("Test FloorMap"))
+    create_floormaps(floormaps, 10)
     mock_session.add_all(floormaps)
     mock_session.commit()
 
