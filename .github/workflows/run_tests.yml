@@ -29,6 +29,9 @@ jobs:
           pip install poetry
           poetry install
 
+      - name: Prepare environment
+        run: python ./cicd/prepare_env.py
+
       - name: Run tests
         run: |
           poetry run pytest --cov=./ --cov-report=xml --html=report.html --self-contained-html
