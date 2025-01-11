@@ -200,7 +200,7 @@ def test_floormap_exists(floormap_service: FloormapService, mock_session: Sessio
     mock_session.add(floormap)
     mock_session.commit()
 
-    floormap_base = FloormapBase.model_validate(floormap)
+    floormap_base = FloormapModel.model_validate(floormap)
     expected = {
         "existing_floormap_base": True,
         "existing_floormap_id": True,
