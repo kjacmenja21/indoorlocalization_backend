@@ -1,9 +1,11 @@
 import uuid
+from datetime import datetime
 from functools import lru_cache
 
 from shapely.geometry import Point
 from sqlalchemy.orm import Session
 
+from app.models.asset import Asset
 from app.models.floor_map import FloorMap
 from app.models.user import UserRole
 from app.schemas.api.asset import AssetCreate
@@ -70,14 +72,21 @@ def create_users(session: Session):
     session.commit()
 
 
-def create_floormaps(session: Session):
-    floormaps = [
-        get_floormap("First Floor 1"),
-        get_floormap("Second Floor 1"),
-        get_floormap("Third Floor 1"),
-    ]
-    session.add_all(floormaps)
-    session.commit()
+def create_floormaps(floormaps: list[FloorMap], count: int):
+    for _ in range(count):
+        floormaps.append(get_floormap("Test FloorMap"))
+
+
+def create_assets(mock_session: Session, assets: list[Asset], count: int = 10):
+    for _ in range(count):
+        floormap = mock_session.query(FloorMap).first()
+        asset_data = get_asset(floormap)
+        assets.append(
+            Asset(
+                **asset_data.model_dump(),
+                **{"x": 0, "y": 0, "last_sync": datetime.now()}
+            )
+        )
 
 
 def get_floormap(name: str):
