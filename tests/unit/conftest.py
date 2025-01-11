@@ -52,3 +52,4 @@ def mock_session():
     # Teardown mock database connection
     session.close()
     Base.metadata.drop_all(engine)
+    engine.dispose()
