@@ -1,30 +1,28 @@
 import os
 
-from dotenv import load_dotenv, set_key
-
-# Load the example environment variables
-load_dotenv(".example.env")
-
 # Define the required environment variables and their default values
 required_env_vars = {
-    "mqtt_public_host": "default_host",
-    "mqtt_username": "default_username",
-    "mqtt_password": "default_password",
-    "jwt_access_token_secret_key": "default_access_secret",
-    "jwt_refresh_token_secret_key": "default_refresh_secret",
+    "MQTT_HOST": "default_host",
+    "MQTT_PORT": "1883",
+    "MQTT_USERNAME": "default_username",
+    "MQTT_PASSWORD": "default_password",
+    "JWT_ACCESS_TOKEN_SECRET_KEY": "default_access_secret",
+    "JWT_REFRESH_TOKEN_SECRET_KEY": "default_refresh_secret",
 }
 
-# Copy .example.env to .env if .env does not exist
-if not os.path.exists(".env"):
-    with open(".example.env", "r", encoding="utf-8") as example_file:
-        with open(".env", "w", encoding="utf-8") as env_file:
-            env_file.write(example_file.read())
+# Read the .example.env file
+with open(".example.env", "r", encoding="utf-8") as example_file:
+    lines = example_file.readlines()
 
-print("HERE")
-# Load the .env file
-load_dotenv(".env")
-
-# Fill in missing values
-for key, default_value in required_env_vars.items():
-    if not os.getenv(key):
-        set_key(".env", key.upper(), default_value.upper())
+# Create or overwrite the .env file
+with open(".env", "w", encoding="utf-8") as env_file:
+    for line in lines:
+        # Split the line into key and value
+        if "=" in line:
+            key, value = line.strip().split("=", 1)
+            # If the key is in the required_env_vars, use the default value if the value is empty
+            if key in required_env_vars and not value:
+                value = required_env_vars[key]
+            env_file.write(f"{key}={value}\n")
+        else:
+            env_file.write(line)
