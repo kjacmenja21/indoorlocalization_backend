@@ -1,7 +1,7 @@
 import uuid
 from functools import lru_cache
-from random import randint
 
+from shapely.geometry import Point
 from sqlalchemy.orm import Session
 
 from app.models.floor_map import FloorMap
@@ -100,23 +100,34 @@ def get_asset(floormap: FloorMap) -> AssetCreate:
     )
 
 
-def get_zone(name: str, floormap: FloorMap) -> tuple[int, ZoneCreate]:
+def get_zone(
+    name: str,
+    floormap: FloorMap,
+    center: Point = Point(50, 50),
+    radius: int = 25,
+    sides: int = 3,
+) -> tuple[int, ZoneCreate]:
+    import math
+
+    from shapely.geometry.polygon import Polygon
+
+    polygon = Polygon(
+        [
+            (
+                center.x + radius * math.cos(2 * math.pi * i / sides),
+                center.y + radius * math.sin(2 * math.pi * i / sides),
+            )
+            for i in range(sides)
+        ]
+    ).exterior.coords
+
     points = [
         ZonePointBase(
-            ordinalNumber=0,
-            x=randint(0, 0),
-            y=randint(0, 0),
-        ),
-        ZonePointBase(
-            ordinalNumber=1,
-            x=randint(51, 100),
-            y=randint(0, 50),
-        ),
-        ZonePointBase(
-            ordinalNumber=2,
-            x=randint(0, 100),
-            y=randint(51, 100),
-        ),
+            ordinalNumber=i,
+            x=point[0],
+            y=point[1],
+        )
+        for i, point in enumerate(polygon)
     ]
     color = int("0x0000FF", 16)
     zone_create = ZoneCreate(
