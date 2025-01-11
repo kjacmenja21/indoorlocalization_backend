@@ -11,6 +11,7 @@ from app import MiddlewareItem, create_server
 from app.models.common import Base
 from app.models.user import UserRole
 from app.schemas.auth.role_types import Role
+from tests.unit.util import get_floormap
 
 
 def create_user_roles(session: Session):
@@ -65,6 +66,16 @@ def create_users(session: Session):
     session.commit()
 
 
+def create_floormaps(session: Session):
+    floormaps = [
+        get_floormap("First Floor 1"),
+        get_floormap("Second Floor 1"),
+        get_floormap("Third Floor 1"),
+    ]
+    session.add_all(floormaps)
+    session.commit()
+
+
 def mock_lifespan(_: FastAPI) -> Generator[None, Any, None]:
     yield
 
@@ -102,7 +113,9 @@ def mock_session():
     session = Session()
 
     create_user_roles(session)
-    create_users(session)  # Commented out because the function is not defined
+    create_users(session)
+    create_floormaps(session)
+
     yield session
 
     # Teardown mock database connection
