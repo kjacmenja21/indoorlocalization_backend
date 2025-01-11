@@ -1,5 +1,4 @@
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
-from sqlalchemy.dialects.postgresql import BOOLEAN
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.common import Base
@@ -13,4 +12,4 @@ class Asset(Base):
     y: Mapped[float] = mapped_column(Float)
     last_sync: Mapped[DateTime] = mapped_column(DateTime)
     floormap_id: Mapped[int] = mapped_column(ForeignKey("floorMap.id"))
-    active: Mapped[bool] = mapped_column(BOOLEAN)
+    active: Mapped[bool] = mapped_column(Boolean)
