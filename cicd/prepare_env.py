@@ -1,7 +1,6 @@
-import os
-
 # Define the required environment variables and their default values
 required_env_vars = {
+    "MQTT_PUBLIC_HOST": "default_host",
     "MQTT_HOST": "default_host",
     "MQTT_PORT": "1883",
     "MQTT_USERNAME": "default_username",
