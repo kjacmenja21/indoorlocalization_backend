@@ -19,30 +19,15 @@ def run_before_and_after_tests(mock_session: Session):
     """Fixture to execute asserts before and after a test is run"""
     # Setup: fill with any logic you want
     floormaps = []
-    create_floormaps(floormaps, 10)
+    create_floormaps(floormaps, 1)
     mock_session.add_all(floormaps)
-    mock_session.commit()
-
-    zones = []
-    for floormap in floormaps:
-        zone_model = get_zone("Seeded Zone", floormap)[1]
-        zone = Zone(**zone_model.model_dump(exclude=["points"]))
-
-        zone.points = []
-        for point in zone_model.points:
-            zone.points.append(
-                ZonePoint(ordinalNumber=point.ordinalNumber, x=point.x, y=point.y)
-            )
-
-        zones.append(zone)
-    mock_session.add_all(zones)
     mock_session.commit()
 
     yield  # this is where the testing happens
 
     # Teardown : fill with any logic you want
-    mock_session.rollback()
     mock_session.query(Zone).delete()
+    mock_session.query(ZonePoint).delete()
     mock_session.query(FloorMap).delete()
     mock_session.commit()
 
@@ -97,7 +82,6 @@ def test_create_zone(zone_service: ZoneService, mock_session: Session):
 
 
 def test_create_zone_conflict(zone_service: ZoneService, mock_session: Session):
-    mock_session.add(get_floormap("Test FloorMap"))
     floormap = mock_session.query(FloorMap).first()
     zone_create = get_zone("Confict Zone", floormap)[1]
     zone_service.create_zone(zone_create)
@@ -108,7 +92,6 @@ def test_create_zone_conflict(zone_service: ZoneService, mock_session: Session):
 
 def test_delete_zone_by_id(zone_service: ZoneService, mock_session: Session):
     # Setup
-    mock_session.add(get_floormap("Test FloorMap"))
     floormap = mock_session.query(FloorMap).first()
     zone = zone_service.create_zone(get_zone("Delete Zone", floormap)[1])
 
