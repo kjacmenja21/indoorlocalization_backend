@@ -35,7 +35,8 @@ def run_before_and_after_tests(mock_session: Session):
 
     # Teardown : fill with any logic you want
 
-    mock_session.query(Zone, FloorMap).delete()
+    mock_session.query(Zone).delete()
+    mock_session.query(FloorMap).delete()
     mock_session.commit()
 
 
