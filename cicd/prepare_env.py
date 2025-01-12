@@ -40,11 +40,13 @@ def fill_env_file(example_file_path, env_file_path, required_vars):
                 env_file.write(line)
 
 
-# Fill out .env
-fill_env_file(".example.env", ".env", required_env_vars)
+# Define the paths and corresponding required variables
+env_files = {
+    ".example.env": (".env", required_env_vars),
+    ".example.env.app": (".env.app", required_env_app_vars),
+    ".example.env.db": (".env.db", required_env_db_vars),
+}
 
-# Fill out .env.app
-fill_env_file(".example.env.app", ".env.app", required_env_app_vars)
-
-# Fill out .env.db
-fill_env_file(".env.db.example", ".env.db", required_env_db_vars)
+# Fill out the env files
+for example_file, (env_file, required_vars) in env_files.items():
+    fill_env_file(example_file, env_file, required_vars)
