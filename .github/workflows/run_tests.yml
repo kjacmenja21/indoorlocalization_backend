@@ -34,15 +34,11 @@ jobs:
 
       - name: Run tests
         run: |
-          poetry run pytest --cov=./ --cov-report=xml --html=report.html --self-contained-html
-
-      - name: Zip coverage and HTML report
-        run: |
-          zip -r reports.zip htmlcov report.html
+          poetry run pytest --cov=./ --html=report.html --self-contained-html
 
       - name: Upload reports
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports
-          path: reports.zip
+          name: Test Report
+          path: report.html
         if: always()
