@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.database.services.zone_service import ZoneService
 from app.models.floor_map import FloorMap
-from app.models.zone import Zone
+from app.models.zone import Zone, ZonePoint
 from app.schemas.api.zone import ZoneModel
 from tests.unit.util import create_floormaps, get_floormap, get_zone
 
@@ -25,16 +25,23 @@ def run_before_and_after_tests(mock_session: Session):
 
     zones = []
     for floormap in floormaps:
-        zones.append(
-            Zone(**get_zone("Seeded Zone", floormap)[1].model_dump(exclude=["points"]))
-        )
+        zone_model = get_zone("Seeded Zone", floormap)[1]
+        zone = Zone(**zone_model.model_dump(exclude=["points"]))
+
+        zone.points = []
+        for point in zone_model.points:
+            zone.points.append(
+                ZonePoint(ordinalNumber=point.ordinalNumber, x=point.x, y=point.y)
+            )
+
+        zones.append(zone)
     mock_session.add_all(zones)
     mock_session.commit()
 
     yield  # this is where the testing happens
 
     # Teardown : fill with any logic you want
-
+    mock_session.rollback()
     mock_session.query(Zone).delete()
     mock_session.query(FloorMap).delete()
     mock_session.commit()
