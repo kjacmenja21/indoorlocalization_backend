@@ -22,6 +22,7 @@ def run_before_and_after_tests(mock_session: Session):
 
     # Teardown : fill with any logic you want
     mock_session.query(FloorMap).delete()
+    mock_session.commit()
 
 
 def test_create_floormap(floormap_service: FloormapService, mock_session: Session):

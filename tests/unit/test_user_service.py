@@ -26,6 +26,7 @@ def cleanup_zones(mock_session: Session):
     # Teardown : fill with any logic you want
     mock_session.query(User).delete()
     mock_session.query(UserRole).delete()
+    mock_session.commit()
 
 
 def test_authenticate_user(user_service: UserService, mock_session: Session):

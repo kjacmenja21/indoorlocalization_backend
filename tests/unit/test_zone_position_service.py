@@ -79,7 +79,11 @@ def run_before_and_after_tests(mock_session: Session):
     yield  # this is where the testing happens
 
     # Teardown : fill with any logic you want
-    mock_session.query(FloorMap, Asset, Zone, AssetZoneHistory, ZonePoint).delete()
+    mock_session.query(FloorMap).delete()
+    mock_session.query(Asset).delete()
+    mock_session.query(Zone).delete()
+    mock_session.query(AssetZoneHistory).delete()
+    mock_session.query(ZonePoint).delete()
     mock_session.commit()
 
 
