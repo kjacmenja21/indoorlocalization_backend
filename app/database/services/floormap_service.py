@@ -3,7 +3,7 @@ from io import BytesIO
 
 from PIL import Image
 from pydantic import Field, PositiveInt
-from sqlalchemy import exists
+from sqlalchemy import Exists
 from sqlalchemy.orm import Session
 
 from app.functions.exceptions import conflict, not_found
@@ -97,12 +97,19 @@ class FloormapService:
         return floormaps
 
     def floormap_exists(self, floormap: FloormapBase | int) -> bool:
-        query = exists()
+        query: Exists | None = None
         if isinstance(floormap, FloormapBase):
-            query = query.where((FloorMap.name == floormap.name))
+            query = (
+                self.session.query(FloorMap.id)
+                .filter(FloorMap.name == floormap.name)
+                .exists()
+            )
         if isinstance(floormap, int):
-            query = query.where(FloorMap.id == floormap)
-
+            query = (
+                self.session.query(FloorMap.id).filter(FloorMap.id == floormap).exists()
+            )
+        if query is None:
+            return False
         floormap_exists = self.session.query(query).scalar()
         return bool(floormap_exists)
 

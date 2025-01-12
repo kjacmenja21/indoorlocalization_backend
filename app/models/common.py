@@ -1,8 +1,8 @@
 import logging
 
+from sqlalchemy import Engine
 from sqlalchemy.orm import DeclarativeBase
 
-from app.database.db import engine
 from app.functions.exceptions import stop_application
 
 
@@ -10,7 +10,7 @@ class Base(DeclarativeBase):
     pass
 
 
-def init_orm() -> None:
+def init_orm(engine: Engine) -> None:
     logging.info("Creating ORM tables from metadata...")
     try:
         Base.metadata.create_all(engine)

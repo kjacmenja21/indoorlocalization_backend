@@ -40,18 +40,13 @@ class ZoneService:
         if self.zone_exists(zone):
             raise conflict()
 
-        new_zone = Zone(**zone.model_dump(exclude="points"))
+        points = [ZonePoint(**point.model_dump()) for point in zone.points]
+        new_zone = Zone(**zone.model_dump(exclude="points"), points=points)
+
         self.session.add(new_zone)
-        self.session.flush()
-
-        new_points: list[ZonePoint] = []
-        for point in zone.points:
-            new_points.append(ZonePoint(**point.model_dump(), zoneId=new_zone.id))
-
-        self.session.bulk_save_objects(new_points)
         self.session.commit()
 
-        zone_points = [ZonePointModel.model_validate(zp) for zp in new_points]
+        zone_points = [ZonePointModel.model_validate(zp) for zp in points]
         return ZoneModel.model_validate(
             {
                 "id": new_zone.id,
