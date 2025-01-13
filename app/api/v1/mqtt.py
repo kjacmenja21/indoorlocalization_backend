@@ -1,14 +1,4 @@
-import json
-import logging
-
-from fastapi import (
-    APIRouter,
-    Request,
-    WebSocket,
-    WebSocketDisconnect,
-    WebSocketException,
-    status,
-)
+from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from pydantic import WebsocketUrl
 
@@ -41,44 +31,14 @@ def get_mqtt_credentials(
 
 @mqtt_router.websocket("/ws")
 async def mqtt_broker_ws(websocket: WebSocket):
-    """WebSocket endpoint to handle connections and authenticate clients."""
-    config = GeneralConfig()
+    """WebSocket endpoint to handle connections and forward MQTT messages."""
+    await connection_manager.add_connection(websocket)
     try:
-        await websocket.accept()
-
-        # Wait for authentication message
-        auth_message = await websocket.receive_text()
-
-        # Validate JSON payload
-        try:
-            auth_data = json.loads(auth_message)
-            username = auth_data.get("username")
-            password = auth_data.get("password")
-
-            if username != config.mqtt_username or password != config.mqtt_password:
-                await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-                return
-
-        except (json.JSONDecodeError, KeyError):
-            await websocket.close(code=status.WS_1003_UNSUPPORTED_DATA)
-            return
-
-        # Authentication successful
-        await connection_manager.add_connection(websocket)
-
-        try:
-            while True:
-                # Keep the WebSocket connection alive
-                await websocket.receive_text()
-        except WebSocketDisconnect:
-            connection_manager.remove_connection(websocket)
-
-    except WebSocketException as e:
-        logging.error("WebSocket error: %s", e)
-        await websocket.close(code=status.WS_1002_PROTOCOL_ERROR)
-    except Exception as e:
-        logging.error("Unexpected error: %s", e)
-        await websocket.close(code=status.WS_1011_INTERNAL_ERROR)
+        while True:
+            # Keep the WebSocket connection alive
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        connection_manager.remove_connection(websocket)
 
 
 @mqtt_router.get("/test", response_class=HTMLResponse)
@@ -94,7 +54,7 @@ async def websocket_test_page():
         <script>
             let ws;
             function connectWebSocket() {
-                const wsUrl = `wss://${location.host}/api/v1/mqtt/ws`;
+                const wsUrl = `ws://${location.host}/api/v1/mqtt/ws`;
                 ws = new WebSocket(wsUrl);
 
                 ws.onopen = () => {
