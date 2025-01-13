@@ -10,6 +10,7 @@ from app.functions.mqtt_client import MQTTClientHandler
 from app.functions.mqtt_handlers import (
     MQTTAssetZoneMovementHandler,
     MQTTCoordinateHandler,
+    connection_manager,
 )
 from app.functions.multicast_dns import MulticastDNS, init_mdns
 from app.models.common import init_orm
@@ -32,7 +33,7 @@ async def lifespan(_: FastAPI):
     await mqtt_client.start()
     mqtt_client.register_topic_handler(MQTTCoordinateHandler())
     mqtt_client.register_topic_handler(MQTTAssetZoneMovementHandler())
-
+    mqtt_client.register_topic_handler(connection_manager)
     multicast_dns = await init_mdns()
 
     yield
