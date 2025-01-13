@@ -32,14 +32,13 @@ class MQTTClientHandler:
                 else:
                     # If the handler is a normal function
                     handler(topic, payload)
-                return
 
     def __init__(self) -> None:
         self.config = GeneralConfig()
         fast_mqtt = FastMQTT(
             config=MQTTConfig(
-                host=self.config.mqtt_host,
-                port=self.config.mqtt_port,
+                host=self.config.mqtt_internal_host,
+                port=self.config.mqtt_internal_port,
                 username=self.config.mqtt_username,
                 password=self.config.mqtt_password,
             )
@@ -56,8 +55,8 @@ class MQTTClientHandler:
             mqtt.client.subscribe("/test/topic")  # subscribing mqtt topic
             logging.info(
                 "Connected to MQTT broker %s:%d",
-                self.config.mqtt_host,
-                self.config.mqtt_port,
+                self.config.mqtt_internal_host,
+                self.config.mqtt_internal_port,
             )
 
         @mqtt.on_message()
@@ -70,8 +69,8 @@ class MQTTClientHandler:
         def disconnect(_client: MQTTClient, _packet: Any, _exc: Any | None = None):
             logging.info(
                 "[MQTT] Disconnected from MQTT broker %s:%d",
-                self.config.mqtt_host,
-                self.config.mqtt_port,
+                self.config.mqtt_internal_host,
+                self.config.mqtt_internal_port,
             )
 
         @mqtt.on_subscribe()

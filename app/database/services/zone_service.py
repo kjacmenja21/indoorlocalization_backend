@@ -35,21 +35,18 @@ class ZoneService:
         return zone_models
 
     def create_zone(self, zone: ZoneCreate) -> ZoneModel:
+        if not self.floormap_service.floormap_exists(zone.floorMapId):
+            raise not_found(f"Floor map with id {zone.floorMapId} doesn't exist.")
         if self.zone_exists(zone):
             raise conflict()
 
-        new_zone = Zone(**zone.model_dump(exclude="points"))
+        points = [ZonePoint(**point.model_dump()) for point in zone.points]
+        new_zone = Zone(**zone.model_dump(exclude="points"), points=points)
+
         self.session.add(new_zone)
-        self.session.flush()
-
-        new_points: list[ZonePoint] = []
-        for point in zone.points:
-            new_points.append(ZonePoint(**point.model_dump(), zoneId=new_zone.id))
-
-        self.session.bulk_save_objects(new_points)
         self.session.commit()
 
-        zone_points = [ZonePointModel.model_validate(zp) for zp in new_points]
+        zone_points = [ZonePointModel.model_validate(zp) for zp in points]
         return ZoneModel.model_validate(
             {
                 "id": new_zone.id,
@@ -59,6 +56,45 @@ class ZoneService:
                 "points": zone_points,
             }
         )
+
+    def update_zone(self, zone: ZoneModel):
+        # Fetch the existing zone
+        zone_row = self.session.query(Zone).where(Zone.id == zone.id).first()
+        if not zone_row:
+            raise not_found(f"Zone with id {zone.id} does not exist.")
+
+        # Update zone fields
+        zone_row.name = zone.name
+        zone_row.color = zone.color
+        zone_row.floorMapId = zone.floorMapId
+
+        # Fetch the existing points for the zone
+        existing_points = (
+            self.session.query(ZonePoint).where(ZonePoint.zoneId == zone.id).all()
+        )
+        existing_point_ids = {p.id for p in existing_points}
+
+        # Extract point data from the input
+        new_point_data = {p.id: p for p in zone.points if p.id is not None}
+        new_points_to_add = [p for p in zone.points if p.id is None]
+
+        # Update existing points
+        for existing_point in existing_points:
+            if existing_point.id in new_point_data:
+                updated_point = new_point_data[existing_point.id]
+                existing_point.x = updated_point.x
+                existing_point.y = updated_point.y
+            else:
+                # Point is not in the new data, delete it
+                self.session.delete(existing_point)
+
+        # Add new points
+        for point in new_points_to_add:
+            new_point = ZonePoint(**point.model_dump(), zoneId=zone.id)
+            self.session.add(new_point)
+
+        # Commit changes
+        self.session.commit()
 
     def delete_zone_by_id(self, zone_id: int) -> None:
         zone = self.session.query(Zone).where(Zone.id == zone_id).first()

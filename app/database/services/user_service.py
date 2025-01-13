@@ -47,7 +47,7 @@ class UserService:
 
         return UserModelIndentified.model_validate(new_user)
 
-    def delete_user(self, user: UserBase | int):
+    def delete_user(self, user: UserBase | int) -> bool:
         user = self.find_user(user)
         if not user:
             return False

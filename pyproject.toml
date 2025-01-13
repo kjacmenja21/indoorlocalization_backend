@@ -23,6 +23,11 @@ python-multipart = "^0.0.19"
 bcrypt = "^4.2.1"
 pydantic = {extras = ["email"], version = "^2.10.3"}
 shapely = "^2.0.6"
+pillow = "^11.1.0"
+pytest-cov = "^6.0.0"
+pytest-asyncio = "^0.25.2"
+pytest-html = "^4.1.1"
+python-dotenv = "^1.0.1"
 
 
 [build-system]

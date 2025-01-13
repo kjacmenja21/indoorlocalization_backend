@@ -3,11 +3,12 @@ from typing import Annotated
 from fastapi import Depends, Request
 
 from app.config import GeneralConfig
-from app.database.db import get_db_session
+from app.database.db import engine_handler
 from app.database.services import UserService
 from app.database.services.asset_position_service import AssetPositionService
 from app.database.services.asset_service import AssetService
 from app.database.services.floormap_service import FloormapService
+from app.database.services.zone_position_service import ZonePositionService
 from app.database.services.zone_service import ZoneService
 from app.functions.exceptions import credentials_exception
 from app.functions.schemes import oauth2_scheme
@@ -16,23 +17,33 @@ from app.schemas.auth.role_types import Role
 from app.schemas.auth.token import Token
 
 
-def get_user_service(session=Depends(get_db_session)) -> UserService:
+def get_user_service(session=Depends(engine_handler.get_db_session)) -> UserService:
     return UserService(session=session)
 
 
-def get_floormap_service(session=Depends(get_db_session)) -> FloormapService:
+def get_floormap_service(
+    session=Depends(engine_handler.get_db_session),
+) -> FloormapService:
     return FloormapService(session=session)
 
 
-def get_asset_service(session=Depends(get_db_session)) -> AssetService:
+def get_asset_service(session=Depends(engine_handler.get_db_session)) -> AssetService:
     return AssetService(session=session)
 
 
-def get_asset_position_service(session=Depends(get_db_session)) -> AssetPositionService:
+def get_asset_position_service(
+    session=Depends(engine_handler.get_db_session),
+) -> AssetPositionService:
     return AssetPositionService(session=session)
 
 
-def get_zone_service(session=Depends(get_db_session)) -> ZoneService:
+def get_zone_position_service(
+    session=Depends(engine_handler.get_db_session),
+) -> ZonePositionService:
+    return ZonePositionService(session=session)
+
+
+def get_zone_service(session=Depends(engine_handler.get_db_session)) -> ZoneService:
     return ZoneService(session=session)
 
 
@@ -43,6 +54,8 @@ FloormapServiceDep = Annotated[FloormapService, Depends(get_floormap_service)]
 AssetServiceDep = Annotated[AssetService, Depends(get_asset_service)]
 
 AssetPositionDep = Annotated[AssetPositionService, Depends(get_asset_position_service)]
+
+ZonePositionDep = Annotated[ZonePositionService, Depends(get_zone_position_service)]
 
 ZoneServiceDep = Annotated[ZoneService, Depends(get_zone_service)]
 

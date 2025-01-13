@@ -3,7 +3,13 @@ from fastapi.responses import JSONResponse
 from pydantic import PositiveInt
 
 from app.api.dependencies import FloormapServiceDep, get_current_user_with_scope
-from app.schemas.api.floormap import FloormapCreate, FloormapModel, FloormapPagination
+from app.schemas.api.floormap import (
+    FloormapCreate,
+    FloormapImageModel,
+    FloormapModel,
+    FloormapPagination,
+    validate_file_type,
+)
 from app.schemas.api.user import UserBase
 from app.schemas.auth.role_types import Role
 
@@ -35,8 +41,13 @@ def create_new_floor_map(
     data: FloormapCreate = Body(...),
     _: UserBase = get_current_user_with_scope([Role.ADMIN]),
 ) -> JSONResponse:
-    image = image.file.read()
-    new_floormap = floormap_service.create_floormap(data, image)
+    validate_file_type(image)
+    image_bytes = image.file.read()
+    new_floormap = floormap_service.create_floormap(
+        data,
+        image=image_bytes,
+        image_type=image.filename.split(".")[-1].lower(),
+    )
 
     return JSONResponse(
         {
@@ -51,7 +62,7 @@ def get_floor_map_by_id(
     floormap_id: int,
     floormap_service: FloormapServiceDep,
     _: UserBase = get_current_user_with_scope([Role.USER]),
-) -> FloormapModel:
+) -> FloormapImageModel:
     floormap = floormap_service.get_floormap(floormap_id)
     return floormap
 
