@@ -1,7 +1,7 @@
 import json
 import logging
 
-from fastapi import HTTPException
+from fastapi import HTTPException, WebSocket
 from pydantic import ValidationError
 from shapely import Point
 from sqlalchemy.orm import Session
@@ -124,3 +124,48 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
             # Asset has exited a zone
             logging.info("Asset has exited a zone")
             service.mark_zone_exit(asset_id=position.assetId)
+
+
+class ConnectionManagerHandler(MQTTTopicHandler):
+    def __init__(self) -> None:
+        super().__init__()
+        self.topic = "/test/topic"  # Subscribe to all topics using a wildcard
+        self.handler = self.broadcast_message
+        self.active_connections: list[WebSocket] = []
+
+    async def add_connection(self, websocket: WebSocket):
+        """Add a new WebSocket connection."""
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        logging.info(
+            "WebSocket connection added. Total connections: %d",
+            len(self.active_connections),
+        )
+
+    def remove_connection(self, websocket: WebSocket):
+        """Remove a WebSocket connection."""
+        self.active_connections.remove(websocket)
+        logging.info(
+            "WebSocket connection removed. Total connections: %d",
+            len(self.active_connections),
+        )
+
+    async def broadcast_message(self, _topic: str, payload: bytes):
+        """Broadcast an MQTT message to all connected WebSocket clients."""
+        try:
+            data = json.loads(payload)
+            message = MQTTAssetUpdateMessage.model_validate(data)
+        except (TypeError, ValidationError) as e:
+            logging.warning("Error parsing payload: %s", e)
+            return
+
+        for connection in self.active_connections:
+            try:
+                await connection.send_text(message.model_dump_json())
+            except Exception as e:
+                logging.warning("Error sending message to WebSocket: %s", e)
+                # Optionally remove the connection on error
+                self.remove_connection(connection)
+
+
+connection_manager = ConnectionManagerHandler()
