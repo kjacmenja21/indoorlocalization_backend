@@ -126,16 +126,19 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
         floormap_validity = floormap_service.floormap_exists_bulk(floormap_ids)
         asset_validity = asset_service.asset_exists_bulk(asset_ids)
 
-        for position, floormap_exists, asset_exists in zip(
-            positions, floormap_validity, asset_validity
-        ):
-            if not floormap_exists:
-                logging.warning("Invalid floormap ID: %s", position.floorMapId)
+        entities_validity = [
+            AssetPositionEntitiesExist(*i)
+            for i in zip(positions, floormap_validity, asset_validity)
+        ]
+
+        for validity in entities_validity:
+            if not validity.floormap_exists:
+                logging.warning("Invalid floormap ID: %s", validity.position.floorMapId)
                 continue
-            if not asset_exists:
-                logging.warning("Invalid asset ID: %s", position.assetId)
+            if not validity.asset_exists:
+                logging.warning("Invalid asset ID: %s", validity.position.assetId)
                 continue
-            valid_positions.append(position)
+            valid_positions.append(validity.position)
 
         return valid_positions
 
