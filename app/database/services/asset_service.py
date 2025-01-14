@@ -90,3 +90,16 @@ class AssetService:
 
         asset_exists = self.session.query(query).scalar()
         return bool(asset_exists)
+
+    def asset_exists_bulk(self, asset_ids: list[int]) -> list[bool]:
+        """Bulk check if assets exist."""
+        if not asset_ids:
+            return []
+
+        # Query the database to check if the assets exist
+        existing_assets = (
+            self.session.query(Asset.id).filter(Asset.id.in_(asset_ids)).all()
+        )
+
+        existing_asset_ids = {asset.id for asset in existing_assets}
+        return [asset_id in existing_asset_ids for asset_id in asset_ids]

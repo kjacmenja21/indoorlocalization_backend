@@ -41,8 +41,7 @@ class MQTTCoordinateHandler(MQTTTopicHandler):
                 service.create_asset_position_history(data=entry)
         except (ValidationError, HTTPException) as exception:
             logging.warning(
-                "Error processing MQTT message: %s: %s",
-                exception.__class__.__name__,
+                "Error processing MQTT message: %s",
                 exception,
             )
 
@@ -52,9 +51,9 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
         super().__init__()
         self.topic = "/test/topic"
         self.handler = self.handle
-        self.buffer = []
         self.buffer_size = buffer_size
         self.flush_interval = flush_interval
+        self.buffer: list[AssetPositionCreate] = []
         self.buffer_lock = asyncio.Lock()
 
         # Start the periodic flush task
@@ -107,21 +106,30 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
         except Exception as e:
             logging.warning("Error during bulk processing: %s", e)
 
-    def _validate_and_prepare_positions(self, session: Session, positions):
-        """Validate floormaps and assets for all positions."""
+    def _validate_and_prepare_positions(
+        self, session: Session, positions: list[AssetPositionCreate]
+    ):
+        """Validate floormaps and assets for all positions using bulk checks."""
         valid_positions = []
         floormap_service = FloormapService(session)
         asset_service = AssetService(session)
 
-        for position in positions:
-            if not floormap_service.floormap_exists(floormap=position.floorMapId):
+        floormap_ids = [position.floorMapId for position in positions]
+        asset_ids = [position.assetId for position in positions]
+
+        # Perform bulk checks for all floormaps and assets
+        floormap_validity = floormap_service.floormap_exists_bulk(floormap_ids)
+        asset_validity = asset_service.asset_exists_bulk(asset_ids)
+
+        for position, floormap_exists, asset_exists in zip(
+            positions, floormap_validity, asset_validity
+        ):
+            if not floormap_exists:
                 logging.warning("Invalid floormap ID: %s", position.floorMapId)
                 continue
-
-            if not asset_service.asset_exists(asset=position.assetId):
+            if not asset_exists:
                 logging.warning("Invalid asset ID: %s", position.assetId)
                 continue
-
             valid_positions.append(position)
 
         return valid_positions

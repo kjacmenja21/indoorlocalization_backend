@@ -113,6 +113,19 @@ class FloormapService:
         floormap_exists = self.session.query(query).scalar()
         return bool(floormap_exists)
 
+    def floormap_exists_bulk(self, floormap_ids: list[int]) -> list[bool]:
+        """Bulk check if floormaps exist."""
+        if not floormap_ids:
+            return []
+
+        # Query the database to check if the floormaps exist
+        existing_floormaps = (
+            self.session.query(FloorMap.id).filter(FloorMap.id.in_(floormap_ids)).all()
+        )
+
+        existing_floormap_ids = {floormap.id for floormap in existing_floormaps}
+        return [floormap_id in existing_floormap_ids for floormap_id in floormap_ids]
+
     def floormap_page_count(self, limit: int = Field(1, gt=1)) -> int:
         count = self.session.query(FloorMap).count()
         return (count + limit - 1) // limit
