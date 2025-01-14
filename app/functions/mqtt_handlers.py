@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 
@@ -47,12 +48,20 @@ class MQTTCoordinateHandler(MQTTTopicHandler):
 
 
 class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
-    def __init__(self) -> None:
+    def __init__(self, buffer_size: int = 10, flush_interval: float = 1.0) -> None:
         super().__init__()
         self.topic = "/test/topic"
         self.handler = self.handle
+        self.buffer = []
+        self.buffer_size = buffer_size
+        self.flush_interval = flush_interval
+        self.buffer_lock = asyncio.Lock()
+
+        # Start the periodic flush task
+        asyncio.create_task(self._periodic_flush())
 
     async def handle(self, _topic: str, payload: bytes) -> None:
+        """Handle incoming messages and add them to the buffer."""
         try:
             data = json.loads(payload)
             message = MQTTAssetUpdateMessage.model_validate(data)
@@ -64,66 +73,83 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
                 y=message.y,
             )
 
+            async with self.buffer_lock:
+                self.buffer.append(position)
+                if len(self.buffer) >= self.buffer_size:
+                    await self._flush_buffer()
+
+        except Exception as e:
+            logging.warning("Error processing MQTT message: %s", e)
+
+    async def _periodic_flush(self):
+        """Flush the buffer periodically based on the flush interval."""
+        while True:
+            await asyncio.sleep(self.flush_interval)
+            async with self.buffer_lock:
+                if self.buffer:
+                    await self._flush_buffer()
+
+    async def _flush_buffer(self):
+        """Process all messages in the buffer."""
+        buffer_copy = self.buffer[:]
+        self.buffer.clear()
+
+        if not buffer_copy:
+            return
+
+        try:
             with engine_handler.get_db_session_ctx() as session:
-                self._validate_floormap(session, position)
-                self._validate_asset(session, position)
-                self._handle_position(session, position)
+                # Validate and process each position in bulk
+                positions = self._validate_and_prepare_positions(session, buffer_copy)
+                self._process_positions(session, positions)
                 session.commit()
-        except (ValidationError, HTTPException) as exception:
-            logging.warning(
-                "Error processing MQTT message: %s: %s",
-                exception.__class__.__name__,
-                exception,
+
+        except Exception as e:
+            logging.warning("Error during bulk processing: %s", e)
+
+    def _validate_and_prepare_positions(self, session: Session, positions):
+        """Validate floormaps and assets for all positions."""
+        valid_positions = []
+        floormap_service = FloormapService(session)
+        asset_service = AssetService(session)
+
+        for position in positions:
+            if not floormap_service.floormap_exists(floormap=position.floorMapId):
+                logging.warning("Invalid floormap ID: %s", position.floorMapId)
+                continue
+
+            if not asset_service.asset_exists(asset=position.assetId):
+                logging.warning("Invalid asset ID: %s", position.assetId)
+                continue
+
+            valid_positions.append(position)
+
+        return valid_positions
+
+    def _process_positions(self, session: Session, positions):
+        """Process all validated positions in bulk."""
+        zone_service = ZonePositionService(session)
+
+        for position in positions:
+            zone = zone_service.find_zone_containing_point(
+                floorMapId=position.floorMapId, test_point=Point(position.x, position.y)
             )
+            current_zone = zone_service.get_current_zone(asset_id=position.assetId)
 
-    def _validate_floormap(
-        self, session: Session, position: AssetPositionCreate
-    ) -> None:
-        service = FloormapService(session)
-        if service.floormap_exists(floormap=position.floorMapId):
-            return
-        raise not_found(f"Floormap with id {position.floorMapId} does not exist.")
+            if zone and (not current_zone or current_zone.zoneId != zone.id):
+                # Handle zone entry
+                if current_zone:
+                    zone_service.mark_zone_exit(asset_id=position.assetId)
 
-    def _validate_asset(self, session: Session, position: AssetPositionCreate) -> None:
-        service = AssetService(session)
-        if service.asset_exists(asset=position.assetId):
-            return
-        raise not_found(f"Asset with id {position.assetId} does not exist.")
-
-    def _handle_position(self, session: Session, position: AssetPositionCreate) -> None:
-        service = ZonePositionService(session)
-        logging.info("Starting position handling")
-        zone = service.find_zone_containing_point(
-            floorMapId=position.floorMapId, test_point=Point(position.x, position.y)
-        )
-        if zone:
-            logging.info("Asset in zone %s (id %d)", zone.name, zone.id)
-
-        current_zone = service.get_current_zone(asset_id=position.assetId)
-
-        if current_zone:
-            logging.info("Asset currently in zone %s", current_zone.zoneId)
-
-        if zone and (not current_zone or current_zone.zoneId != zone.id):
-            # Asset has entered a new zone
-            logging.info("Asset has entered a new zone")
-            if current_zone:
-                # Mark the previous zone entry as exited
-                logging.info("Mark the previous zone entry as exited")
-                service.mark_zone_exit(asset_id=position.assetId)
-
-            # Create a new entry for the current zone
-            logging.info("Create a new entry for the current zone")
-            service.create_asset_zone_position_entry(
-                AssetZoneHistoryCreate(
-                    assetId=position.assetId,
-                    zoneId=zone.id,
+                zone_service.create_asset_zone_position_entry(
+                    AssetZoneHistoryCreate(
+                        assetId=position.assetId,
+                        zoneId=zone.id,
+                    )
                 )
-            )
-        elif not zone and current_zone:
-            # Asset has exited a zone
-            logging.info("Asset has exited a zone")
-            service.mark_zone_exit(asset_id=position.assetId)
+            elif not zone and current_zone:
+                # Handle zone exit
+                zone_service.mark_zone_exit(asset_id=position.assetId)
 
 
 class ConnectionManagerHandler(MQTTTopicHandler):
