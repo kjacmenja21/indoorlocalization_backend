@@ -12,6 +12,7 @@ from app.database.services.asset_position_service import AssetPositionService
 from app.database.services.asset_service import AssetService
 from app.database.services.floormap_service import FloormapService
 from app.database.services.zone_position_service import ZonePositionService
+from app.functions.cache import AsyncCache
 from app.schemas.api.asset_position import (
     AssetPositionCreate,
     AssetPositionEntitiesExist,
@@ -59,7 +60,7 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
         self.buffer: list[AssetPositionCreate] = []
         self.buffer_lock = asyncio.Lock()
 
-        self.__exists_cache: list[AssetPositionEntitiesExist] = []
+        self.cache = AsyncCache[AssetPositionEntitiesExist](max_age=3600)
 
         # Start the periodic flush task
         asyncio.create_task(self._periodic_flush())
@@ -104,14 +105,16 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
         try:
             with engine_handler.get_db_session_ctx() as session:
                 # Validate and process each position in bulk
-                positions = self._validate_and_prepare_positions(session, buffer_copy)
+                positions = await self._validate_and_prepare_positions(
+                    session, buffer_copy
+                )
                 self._process_positions(session, positions)
                 session.commit()
 
         except Exception as e:
             logging.warning("Error during bulk processing: %s", e)
 
-    def _validate_and_prepare_positions(
+    async def _validate_and_prepare_positions(
         self, session: Session, positions: list[AssetPositionCreate]
     ):
         """Validate floormaps and assets for all positions using bulk checks."""
@@ -126,12 +129,16 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
         floormap_validity = floormap_service.floormap_exists_bulk(floormap_ids)
         asset_validity = asset_service.asset_exists_bulk(asset_ids)
 
-        entities_validity = [
-            AssetPositionEntitiesExist(*i)
-            for i in zip(positions, floormap_validity, asset_validity)
-        ]
+        for i in zip(positions, floormap_validity, asset_validity):
+            await self.cache.add(
+                AssetPositionEntitiesExist(
+                    position=i[0],
+                    floormap_exists=i[1],
+                    asset_exists=i[2],
+                )
+            )
 
-        for validity in entities_validity:
+        for validity in self.cache.get_cache():
             if not validity.floormap_exists:
                 logging.warning("Invalid floormap ID: %s", validity.position.floorMapId)
                 continue
@@ -142,7 +149,7 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
 
         return valid_positions
 
-    def _process_positions(self, session: Session, positions):
+    def _process_positions(self, session: Session, positions: AssetPositionCreate):
         """Process all validated positions in bulk."""
         zone_service = ZonePositionService(session)
 
