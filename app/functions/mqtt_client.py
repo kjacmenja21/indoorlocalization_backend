@@ -1,3 +1,4 @@
+import asyncio
 import inspect
 import logging
 from typing import Any
@@ -23,15 +24,20 @@ class MQTTClientHandler:
         self._topic_handlers.append(handler)
 
     async def _handle_topic(self, topic: str, payload: bytes) -> None:
+        tasks = []
         for handler_entry in self._topic_handlers:
             if handler_entry.topic == topic:
                 handler = handler_entry.handler
                 if inspect.iscoroutinefunction(handler):
-                    # If the handler is awaitable
-                    await handler(topic, payload)
+                    # If the handler is awaitable, add it as a task
+                    tasks.append(handler(topic, payload))
                 else:
-                    # If the handler is a normal function
-                    handler(topic, payload)
+                    # Wrap the synchronous handler in an executor to prevent blocking
+                    tasks.append(asyncio.to_thread(handler, topic, payload))
+
+        # Run all tasks concurrently
+        if tasks:
+            await asyncio.gather(*tasks)
 
     def __init__(self) -> None:
         self.config = GeneralConfig()
