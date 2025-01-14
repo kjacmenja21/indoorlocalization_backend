@@ -13,7 +13,8 @@ class AsyncCache(Generic[T]):
 
     async def add(self, item: T):
         """Add an item to the cache."""
-        self.cache.append(item)
+        if item not in self.cache:
+            self.cache.append(item)
         # Optionally, set the cache to clear after max_age seconds
         if self._clear_task is None or self._clear_task.done():
             self._clear_task = asyncio.create_task(
@@ -24,7 +25,6 @@ class AsyncCache(Generic[T]):
         """Clear the cache after a certain delay (simulating cache expiration)."""
         await asyncio.sleep(delay)  # Wait for the specified time
         self.cache.clear()  # Clear the cache
-        print("Cache cleared")
 
     def get_cache(self) -> List[T]:
         """Return the current cache."""
@@ -33,4 +33,3 @@ class AsyncCache(Generic[T]):
     async def clear_cache(self):
         """Clear the cache explicitly."""
         self.cache.clear()
-        print("Cache cleared manually")
