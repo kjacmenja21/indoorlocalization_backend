@@ -25,3 +25,9 @@ class AssetPositionQuery(AssetPositionBase):
 class AssetPositionModel(AssetPositionCreate):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class AssetPositionEntitiesExist(BaseModel):
+    position: AssetPositionCreate
+    floormap_exists: bool
+    asset_exists: bool

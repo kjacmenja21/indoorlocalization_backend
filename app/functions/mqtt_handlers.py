@@ -12,8 +12,10 @@ from app.database.services.asset_position_service import AssetPositionService
 from app.database.services.asset_service import AssetService
 from app.database.services.floormap_service import FloormapService
 from app.database.services.zone_position_service import ZonePositionService
-from app.functions.exceptions import not_found
-from app.schemas.api.asset_position import AssetPositionCreate
+from app.schemas.api.asset_position import (
+    AssetPositionCreate,
+    AssetPositionEntitiesExist,
+)
 from app.schemas.api.zone_position import AssetZoneHistoryCreate
 from app.schemas.mqtt.handler import MQTTAssetUpdateMessage, MQTTTopicHandler
 
@@ -51,10 +53,13 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
         super().__init__()
         self.topic = "/test/topic"
         self.handler = self.handle
+
         self.buffer_size = buffer_size
         self.flush_interval = flush_interval
         self.buffer: list[AssetPositionCreate] = []
         self.buffer_lock = asyncio.Lock()
+
+        self.__exists_cache: list[AssetPositionEntitiesExist] = []
 
         # Start the periodic flush task
         asyncio.create_task(self._periodic_flush())
