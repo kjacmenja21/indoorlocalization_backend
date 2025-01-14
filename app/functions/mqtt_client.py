@@ -20,7 +20,11 @@ class MQTTClientHandler:
         await self.fast_mqtt.mqtt_shutdown()
 
     def register_topic_handler(self, handler: MQTTTopicHandler) -> None:
-        self.fast_mqtt.client.subscribe(handler.topic)
+        topic_registered = handler.topic in [
+            subscription.topic for subscription in self.fast_mqtt.client.subscriptions
+        ]
+        if not topic_registered:
+            self.fast_mqtt.client.subscribe(handler.topic)
         self._topic_handlers.append(handler)
 
     async def _handle_topic(self, topic: str, payload: bytes) -> None:
