@@ -1,7 +1,8 @@
+import asyncio
 import json
 import logging
 
-from fastapi import HTTPException
+from fastapi import HTTPException, WebSocket
 from pydantic import ValidationError
 from shapely import Point
 from sqlalchemy.orm import Session
@@ -11,8 +12,11 @@ from app.database.services.asset_position_service import AssetPositionService
 from app.database.services.asset_service import AssetService
 from app.database.services.floormap_service import FloormapService
 from app.database.services.zone_position_service import ZonePositionService
-from app.functions.exceptions import not_found
-from app.schemas.api.asset_position import AssetPositionCreate
+from app.functions.cache import AsyncCache
+from app.schemas.api.asset_position import (
+    AssetPositionCreate,
+    AssetPositionEntitiesExist,
+)
 from app.schemas.api.zone_position import AssetZoneHistoryCreate
 from app.schemas.mqtt.handler import MQTTAssetUpdateMessage, MQTTTopicHandler
 
@@ -40,19 +44,29 @@ class MQTTCoordinateHandler(MQTTTopicHandler):
                 service.create_asset_position_history(data=entry)
         except (ValidationError, HTTPException) as exception:
             logging.warning(
-                "Error processing MQTT message: %s: %s",
-                exception.__class__.__name__,
+                "Error processing MQTT message: %s",
                 exception,
             )
 
 
 class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
-    def __init__(self) -> None:
+    def __init__(self, buffer_size: int = 10, flush_interval: float = 1.0) -> None:
         super().__init__()
         self.topic = "/test/topic"
         self.handler = self.handle
 
+        self.buffer_size = buffer_size
+        self.flush_interval = flush_interval
+        self.buffer: list[AssetPositionCreate] = []
+        self.buffer_lock = asyncio.Lock()
+
+        self.cache = AsyncCache[AssetPositionEntitiesExist](max_age=3600)
+
+        # Start the periodic flush task
+        asyncio.create_task(self._periodic_flush())
+
     async def handle(self, _topic: str, payload: bytes) -> None:
+        """Handle incoming messages and add them to the buffer."""
         try:
             data = json.loads(payload)
             message = MQTTAssetUpdateMessage.model_validate(data)
@@ -64,63 +78,143 @@ class MQTTAssetZoneMovementHandler(MQTTTopicHandler):
                 y=message.y,
             )
 
+            async with self.buffer_lock:
+                self.buffer.append(position)
+                if len(self.buffer) >= self.buffer_size:
+                    await self._flush_buffer()
+
+        except Exception as e:
+            logging.warning("Error processing MQTT message: %s", e)
+
+    async def _periodic_flush(self):
+        """Flush the buffer periodically based on the flush interval."""
+        while True:
+            await asyncio.sleep(self.flush_interval)
+            async with self.buffer_lock:
+                if self.buffer:
+                    await self._flush_buffer()
+
+    async def _flush_buffer(self):
+        """Process all messages in the buffer."""
+        buffer_copy = self.buffer[:]
+        self.buffer.clear()
+
+        if not buffer_copy:
+            return
+
+        try:
             with engine_handler.get_db_session_ctx() as session:
-                self._validate_floormap(session, position)
-                self._validate_asset(session, position)
-                self._handle_position(session, position)
+                # Validate and process each position in bulk
+                positions = await self._validate_and_prepare_positions(
+                    session, buffer_copy
+                )
+                self._process_positions(session, positions)
                 session.commit()
-        except (ValidationError, HTTPException) as exception:
-            logging.warning(
-                "Error processing MQTT message: %s: %s",
-                exception.__class__.__name__,
-                exception,
-            )
 
-    def _validate_floormap(
-        self, session: Session, position: AssetPositionCreate
-    ) -> None:
-        service = FloormapService(session)
-        if service.floormap_exists(floormap=position.floorMapId):
-            return
-        raise not_found(f"Floormap with id {position.floorMapId} does not exist.")
+        except Exception as e:
+            logging.warning("Error during bulk processing: %s", e)
 
-    def _validate_asset(self, session: Session, position: AssetPositionCreate) -> None:
-        service = AssetService(session)
-        if service.asset_exists(asset=position.assetId):
-            return
-        raise not_found(f"Asset with id {position.assetId} does not exist.")
+    async def _validate_and_prepare_positions(
+        self, session: Session, positions: list[AssetPositionCreate]
+    ):
+        """Validate floormaps and assets for all positions using bulk checks."""
+        valid_positions = []
+        floormap_service = FloormapService(session)
+        asset_service = AssetService(session)
 
-    def _handle_position(self, session: Session, position: AssetPositionCreate) -> None:
-        service = ZonePositionService(session)
-        logging.info("Starting position handling")
-        zone = service.find_zone_containing_point(
-            floorMapId=position.floorMapId, test_point=Point(position.x, position.y)
-        )
-        if zone:
-            logging.info("Asset in zone %s (id %d)", zone.name, zone.id)
+        floormap_ids = [position.floorMapId for position in positions]
+        asset_ids = [position.assetId for position in positions]
 
-        current_zone = service.get_current_zone(asset_id=position.assetId)
+        # Perform bulk checks for all floormaps and assets
+        floormap_validity = floormap_service.floormap_exists_bulk(floormap_ids)
+        asset_validity = asset_service.asset_exists_bulk(asset_ids)
 
-        if current_zone:
-            logging.info("Asset currently in zone %s", current_zone.zoneId)
-
-        if zone and (not current_zone or current_zone.zoneId != zone.id):
-            # Asset has entered a new zone
-            logging.info("Asset has entered a new zone")
-            if current_zone:
-                # Mark the previous zone entry as exited
-                logging.info("Mark the previous zone entry as exited")
-                service.mark_zone_exit(asset_id=position.assetId)
-
-            # Create a new entry for the current zone
-            logging.info("Create a new entry for the current zone")
-            service.create_asset_zone_position_entry(
-                AssetZoneHistoryCreate(
-                    assetId=position.assetId,
-                    zoneId=zone.id,
+        for i in zip(positions, floormap_validity, asset_validity):
+            await self.cache.add(
+                AssetPositionEntitiesExist(
+                    position=i[0],
+                    floormap_exists=i[1],
+                    asset_exists=i[2],
                 )
             )
-        elif not zone and current_zone:
-            # Asset has exited a zone
-            logging.info("Asset has exited a zone")
-            service.mark_zone_exit(asset_id=position.assetId)
+
+        for validity in self.cache.get_cache():
+            if not validity.floormap_exists:
+                logging.warning("Invalid floormap ID: %s", validity.position.floorMapId)
+                continue
+            if not validity.asset_exists:
+                logging.warning("Invalid asset ID: %s", validity.position.assetId)
+                continue
+            valid_positions.append(validity.position)
+
+        return valid_positions
+
+    def _process_positions(self, session: Session, positions: AssetPositionCreate):
+        """Process all validated positions in bulk."""
+        zone_service = ZonePositionService(session)
+
+        for position in positions:
+            zone = zone_service.find_zone_containing_point(
+                floorMapId=position.floorMapId, test_point=Point(position.x, position.y)
+            )
+            current_zone = zone_service.get_current_zone(asset_id=position.assetId)
+
+            if zone and (not current_zone or current_zone.zoneId != zone.id):
+                # Handle zone entry
+                if current_zone:
+                    zone_service.mark_zone_exit(asset_id=position.assetId)
+
+                zone_service.create_asset_zone_position_entry(
+                    AssetZoneHistoryCreate(
+                        assetId=position.assetId,
+                        zoneId=zone.id,
+                    )
+                )
+            elif not zone and current_zone:
+                # Handle zone exit
+                zone_service.mark_zone_exit(asset_id=position.assetId)
+
+
+class ConnectionManagerHandler(MQTTTopicHandler):
+    def __init__(self) -> None:
+        super().__init__()
+        self.topic = "/test/topic"  # Subscribe to all topics using a wildcard
+        self.handler = self.broadcast_message
+        self.active_connections: list[WebSocket] = []
+
+    async def add_connection(self, websocket: WebSocket):
+        """Add a new WebSocket connection."""
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        logging.info(
+            "WebSocket connection added. Total connections: %d",
+            len(self.active_connections),
+        )
+
+    def remove_connection(self, websocket: WebSocket):
+        """Remove a WebSocket connection."""
+        self.active_connections.remove(websocket)
+        logging.info(
+            "WebSocket connection removed. Total connections: %d",
+            len(self.active_connections),
+        )
+
+    async def broadcast_message(self, _topic: str, payload: bytes):
+        """Broadcast an MQTT message to all connected WebSocket clients."""
+        try:
+            data = json.loads(payload)
+            message = MQTTAssetUpdateMessage.model_validate(data)
+        except (TypeError, ValidationError) as e:
+            logging.warning("Error parsing payload: %s", e)
+            return
+
+        for connection in self.active_connections:
+            try:
+                await connection.send_text(message.model_dump_json())
+            except Exception as e:
+                logging.warning("Error sending message to WebSocket: %s", e)
+                # Optionally remove the connection on error
+                self.remove_connection(connection)
+
+
+connection_manager = ConnectionManagerHandler()

@@ -64,5 +64,7 @@ class HypercornConfig(Config):
 
     def __init__(self) -> None:
         super().__init__()
+        self.workers = 4  # Number of workers
+        self.worker_class = "asyncio"  # Worker class: asyncio, uvloop, or trio
         self.bind = [f"{self.host}:{self.port}"]
         self.loglevel = "INFO"
