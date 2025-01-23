@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Body, Query
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import PositiveInt
 
@@ -46,7 +47,7 @@ def create_new_asset(
     return JSONResponse(
         {
             "message": "Floormap successfully created.",
-            "floormap": new_asset.model_dump(),
+            "floormap": jsonable_encoder(new_asset),
         }
     )
 
