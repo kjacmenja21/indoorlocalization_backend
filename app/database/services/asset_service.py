@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.functions.exceptions import conflict, not_found
 from app.models.asset import Asset
+from app.models.floor_map import FloorMap
 from app.schemas.api.asset import AssetBase, AssetCreate, AssetModel, AssetPut
 
 
@@ -15,6 +16,11 @@ class AssetService:
         self.session = session
 
     def create_asset(self, asset: AssetCreate) -> AssetModel:
+        floormap = (
+            self.session.query(FloorMap).where(FloorMap.id == asset.floormap_id).first()
+        )
+        if floormap is None:
+            raise not_found()
         if self.asset_exists(asset):
             raise conflict()
         new_asset = Asset(
