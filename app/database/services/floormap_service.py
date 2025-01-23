@@ -144,7 +144,7 @@ class FloormapService:
 
         # Load image from bytes
         image = Image.open(BytesIO(image_bytes))
-
+        image_type = image.format if image.format else image_type
         # Create a bytes buffer to hold the image data
         buffer = BytesIO()
         # Save the image to the buffer in the specified format
