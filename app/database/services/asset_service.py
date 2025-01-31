@@ -74,6 +74,10 @@ class AssetService:
 
         return assets
 
+    def get_asset_pages(self, page_size: int):
+        total_items = self.session.query(Asset).count()
+        return (total_items + page_size - 1) // page_size
+
     def get_asset(self, asset: AssetBase | int) -> AssetModel:
         filter_query = None
         if isinstance(asset, AssetBase):
