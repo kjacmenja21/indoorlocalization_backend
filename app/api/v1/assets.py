@@ -30,7 +30,7 @@ def retrieve_assets(
 
     return AssetPagination(
         current_page=page,
-        total_pages=0,
+        total_pages=len(assets),
         page_limit=limit,
         page=assets,
     )
