@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 from app.config import FastAPISettings
-from app.functions.jwt import get_password_hash
+from app.functions.jwt_functions import get_password_hash
 from app.schemas.auth.role_types import Role
 
 # revision identifiers, used by Alembic.

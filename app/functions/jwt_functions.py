@@ -5,7 +5,7 @@ from datetime import timedelta
 from typing import Any, Optional
 
 import bcrypt
-from jose import JWTError, jwt
+import jwt
 from pydantic import BaseModel, SecretStr
 
 logger = logging.getLogger(__name__)
@@ -46,8 +46,9 @@ def create_token(
     try:
         encoded_jwt = jwt.encode(to_encode, key=key, algorithm=algorithm)
         return encoded_jwt
-    except JWTError as e:
-        logger.error(e)
+    except Exception as e:
+        logger.exception(e)
+        return None
 
 
 def decode_token(
@@ -56,5 +57,6 @@ def decode_token(
     try:
         payload = jwt.decode(token, key=key, algorithms=[algorithm])
         return payload
-    except JWTError:
+    except Exception as e:
+        logger.exception(e)
         return None

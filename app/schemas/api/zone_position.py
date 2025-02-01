@@ -8,15 +8,19 @@ from app.schemas.api.common import round_up_to_hour
 
 class AssetZonePositionQuery(BaseModel):
     assetId: int
-    startDate: datetime = round_up_to_hour(datetime.now() - timedelta(days=1))
-    endDate: datetime = round_up_to_hour(datetime.now())
+    startDate: datetime = Field(
+        default_factory=lambda: round_up_to_hour(datetime.now() - timedelta(days=1))
+    )
+    endDate: datetime = Field(
+        default_factory=lambda: round_up_to_hour(datetime.now()),
+    )
 
 
 class AssetZoneHistoryBase(BaseModel):
     assetId: int
     zoneId: int
     enterDateTime: datetime = Field(
-        datetime.now(),
+        default_factory=datetime.now,
         example=round_up_to_hour(datetime.now()),
     )
     exitDateTime: Optional[datetime] = Field(
