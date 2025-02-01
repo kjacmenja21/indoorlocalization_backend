@@ -10,7 +10,7 @@ from pydantic import (
     field_validator,
 )
 
-from app.functions.jwt import generate_salt, get_password_hash
+from app.functions.jwt_functions import generate_salt, get_password_hash
 from app.schemas.auth.role_types import Role
 
 

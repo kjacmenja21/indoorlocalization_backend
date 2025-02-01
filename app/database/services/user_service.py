@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, joinedload
 
 from app.functions.exceptions import not_found
-from app.functions.jwt import verify_password
+from app.functions.jwt_functions import verify_password
 from app.models.user import User, UserRole
 from app.schemas.api.user import (
     UserBase,

@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, ValidationError, computed_field
 
 from app.config import GeneralConfig
 from app.functions.exceptions import forbidden, unprocessable_entity
-from app.functions.jwt import create_token, decode_token
+from app.functions.jwt_functions import create_token, decode_token
 from app.schemas.auth.role_types import Role
 from app.schemas.auth.token_extra import (
     RefreshTokenData,

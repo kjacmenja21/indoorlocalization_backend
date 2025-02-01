@@ -206,3 +206,23 @@ def test_asset_exists_by_name(asset_service: AssetService, mock_session: Session
     result = asset_service.asset_exists(AssetModel.model_validate(asset_name))
 
     assert result is True
+
+
+def test_get_asset_pages(asset_service: AssetService, mock_session: Session):
+    page_size = 2
+    actual_pages = (mock_session.query(Asset).count() + page_size - 1) // page_size
+    result = asset_service.get_asset_pages(page_size)
+    assert result == actual_pages
+
+
+def test_get_asset_pages_with_zero_items(
+    asset_service: AssetService, mock_session: Session
+):
+    mock_session.query(Asset).delete()
+    mock_session.commit()
+
+    asset_service.session = mock_session
+    page_size = 10
+    result = asset_service.get_asset_pages(page_size)
+
+    assert result == 0
