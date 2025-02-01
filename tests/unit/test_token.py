@@ -5,7 +5,7 @@ from fastapi import HTTPException
 
 from app.config import GeneralConfig
 from app.functions.exceptions import forbidden, unprocessable_entity
-from app.functions.jwt import create_token
+from app.functions.jwt_functions import create_token
 from app.schemas.api.user import UserRoleModel
 from app.schemas.auth.role_types import Role
 from app.schemas.auth.token import Token
