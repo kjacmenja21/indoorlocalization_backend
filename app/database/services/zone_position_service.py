@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.models.history import AssetZoneHistory
 from app.models.zone import Zone
-from app.schemas.api.asset_position import AssetPositionModel
 from app.schemas.api.zone_position import (
     AssetZoneHistoryCreate,
     AssetZoneHistoryModel,
@@ -24,17 +23,13 @@ class ZonePositionService:
 
         for_asset = AssetZoneHistory.assetId == query.assetId
 
-        after_start_date = (AssetZoneHistory.enterDateTime >= query.startDate) | (
+        intersects_time_range = (AssetZoneHistory.enterDateTime <= query.endDate) & (
             AssetZoneHistory.exitDateTime >= query.startDate
-        )
-
-        before_end_date = (AssetZoneHistory.enterDateTime <= query.endDate) | (
-            AssetZoneHistory.exitDateTime <= query.endDate
         )
 
         results = (
             self.session.query(AssetZoneHistory)
-            .filter(for_asset & (after_start_date | before_end_date))
+            .filter(for_asset & intersects_time_range)
             .all()
         )
 
