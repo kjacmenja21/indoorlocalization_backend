@@ -23,16 +23,15 @@ class ZonePositionService:
 
         for_asset = AssetZoneHistory.assetId == query.assetId
 
-        intersects_time_range = (AssetZoneHistory.enterDateTime <= query.endDate) & (
-            AssetZoneHistory.exitDateTime >= query.startDate
+        entered_during_period = (AssetZoneHistory.enterDateTime >= query.startDate) & (
+            AssetZoneHistory.enterDateTime <= query.endDate
         )
 
         results = (
             self.session.query(AssetZoneHistory)
-            .filter(for_asset & intersects_time_range)
+            .filter(for_asset & entered_during_period)
             .all()
         )
-
         return [AssetZoneHistoryModel.model_validate(r) for r in results]
 
     def get_current_zone(self, asset_id: int) -> AssetZoneHistory | None:
